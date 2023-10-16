@@ -14,7 +14,7 @@
 #include <stdlib.h>
 
 /* 記号定数の定義 */
-#define GEAMAX 1000 /* 学習の繰り返し回数 */
+#define GENMAX 1000 /* 学習の繰り返し回数 */
 #define NODENO 15   /* Q値のノード数 */
 #define ALPHA 0.1   /* 学習係数 */
 #define GAMMA 0.9   /* 割引率 */
@@ -22,9 +22,9 @@
 #define SEED 32767 /* 乱数のシード */
 
 /* 関数のプロトタイプの宣言 */
-int randl00();  /* 0~100を返す乱数関数 */
-int rand01 ();  /* 0または1を返す乱数関数 */
-double randl(); /* 0~1の実数を返す乱数関数 */
+int rand100();  /* 0~100を返す乱数関数 */
+int rand01();  /* 0または1を返す乱数関数 */
+double rand1(); /* 0~1の実数を返す乱数関数 */
 void printqvalue (int qvalue[NODENO]) ; /* Q値出力 */
 int selecta(int s, int qvalue[NODENO]) ; /* 行動選択 */
 int updateq(int s, int qvalue[NODENO]) ; /* Q値更新 */
@@ -40,9 +40,9 @@ int main ()
     srand (SEED);   /* 乱数の初期化/
 
     /* Q値の初期化 */
-    for (i = 0; i < NODENO; ++1)
+    for (i = 0; i < NODENO; ++i)
     {
-        qvalue [i] = rand100 () ;
+        qvalue [i] = rand100();
     }
     printqvalue (qvalue);
 
@@ -85,14 +85,15 @@ int updateq (int s, int qvalue [NODENO] )
         /* 報酬を与えるノードを増やす */
         /* 他のノードを追加する場合は */
         /* 下記2行のコメントを外す　  */
+
         // else if (s == 11) /* 報酬の付与 */
         // {
-        //     qv = qvalue [s] + ALPHA (500 - qvalue [s]);
+        //     qv = qvalue[s] + ALPHA * (500 - qvalue[s]);
         // }
-        else /* 報酬なし */
-        {
-            qv = qvalue[s];
-        }
+        // else /* 報酬なし */
+        // {
+        //     qv = qvalue[s];
+        // }
     }
     /* 最下段以外 */
     else
@@ -121,7 +122,7 @@ int selecta(int olds, int qvalue[NODENO])
     int s;
 
     /* ξ-greedy法による行動選択*/
-    if(randl() < EPSILON)
+    if(rand1() < EPSILON)
     {
         /* ランダムに行動 */
         if(rand01() == 0)
@@ -149,7 +150,6 @@ int selecta(int olds, int qvalue[NODENO])
     return s;
 }
 
-
 /************************************/
 /*      printqvalue()関数　　　      */
 /*      Q値を選択する　　　　         */
@@ -172,7 +172,7 @@ void printqvalue(int qvalue[NODENO])
 /*      0~1の実数を返す乱数関数       */
 /************************************/
 
-int rand1()
+double rand1()
 {
     /* 乱数の計算 */
     return (double)rand() / RAND_MAX;
@@ -209,4 +209,3 @@ int rand100()
     /* 乱数の計算 */
     return (int)((double)rnd / RAND_MAX * 101);
 }
-
