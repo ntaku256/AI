@@ -66,6 +66,7 @@ V = 6
 # 伝達関数
 ### ステップ関数(Step Function)
 - 非線形関数で断片的
+!()[https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/StepFunction.png]
 ### シグモイド関数(Sigmoid Function)
 - なめらかな関数で連続的
 
