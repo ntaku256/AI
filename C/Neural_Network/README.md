@@ -6,8 +6,8 @@
 ### 神経細胞（ニューロン）
 ![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/Neurons.png)
 [画像の参考URL](https://hombre-nuevo.com/machinelearning/machinelearning0001/)
-<br>
 
+<br>
 
 # 人口ニューロンの中
 ![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/Function.png)
@@ -66,9 +66,19 @@ V = 6
 # 伝達関数
 ### ステップ関数(Step Function)
 - 非線形関数で断片的
-!()[https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/StepFunction.png]
+<img src="https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/StepFunction.png" width="30%">
+
+<br>
+
 ### シグモイド関数(Sigmoid Function)
 - なめらかな関数で連続的
+- バックプロパゲーションにおける学習の計算処理が容易
+<img src="https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/SigmoidFunction.png" width="70%">
+
+<br>
+
+### ステップ関数による論理演算
+- AND
 
 # 人口ニューロン - 1つのセルでの処理
 # ニューラルネット - 複数の人口ニューロン
