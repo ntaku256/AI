@@ -4,11 +4,8 @@
 ### 人工ニューロン
 - ニューロ素子やニューロセルとも呼ぶ。
 ### 神経細胞（ニューロン）
-![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Neuron.png)
+![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/Neurons.png)
 [参考URL](https://hombre-nuevo.com/machinelearning/machinelearning0001/)
-
-![図4.1](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/図4.1_人工ニューロンの構成.png)
-
 ### 入力：X1 ~ Xn
 ### 重み(weight)：W1 ~ Wn
 ### しきい値：v
