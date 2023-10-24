@@ -78,9 +78,14 @@ V = 6
 <br>
 
 ### ステップ関数による論理演算
+- OR
+![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/OR.png)
 - AND
+![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/AND.png)
+- そのほかにもNOTやXORなどの論理回路を構成可能
 
-# 人口ニューロン - 1つのセルでの処理
-# ニューラルネット - 複数の人口ニューロン
+<br>
+
+# ニューラルネット
 ### フィードフォワード型ネット(Feed Formard Neteork)
 ### 階層型ネットワーク(Layerd Network)
