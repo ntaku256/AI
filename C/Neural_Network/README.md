@@ -4,13 +4,13 @@
 ### 人工ニューロン
 - ニューロ素子やニューロセルとも呼ぶ。
 ### 神経細胞（ニューロン）
-![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/Neurons.png)
+![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/Neurons.png)
 [画像の参考URL](https://hombre-nuevo.com/machinelearning/machinelearning0001/)
 
 <br>
 
 # 人口ニューロンの中
-![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/Function.png)
+![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/Function.png)
 - 入力：X1 ~ Xn
 - 重み(weight)：W1 ~ Wn
 - しきい値：v
@@ -66,22 +66,22 @@ V = 6
 # 伝達関数
 ### ステップ関数(Step Function)
 - 非線形関数で断片的
-<img src="https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/StepFunction.png" width="30%">
+<img src="https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/StepFunction.png" width="35%">
 
 <br>
 
 ### シグモイド関数(Sigmoid Function)
 - なめらかな関数で連続的
 - バックプロパゲーションにおける学習の計算処理が容易
-<img src="https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/SigmoidFunction.png" width="70%">
+<img src="https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/SigmoidFunction.png" width="70%">
 
 <br>
 
 ### ステップ関数による論理演算
 - OR
-![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/OR.png)
+<img src="https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/OR.png" width="50%">
 - AND
-![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Sorce/AND.png)
+<img src="https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/AND.png" width="50%">
 - そのほかにもNOTやXORなどの論理回路を構成可能
 
 <br>
