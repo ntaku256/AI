@@ -87,5 +87,5 @@ V = 6
 <br>
 
 # ニューラルネット
-### フィードフォワード型ネット(Feed Formard Neteork)
-### 階層型ネットワーク(Layerd Network)
+### フィードフォワード型ネット(Feed Formard Neteork)または階層型ネットワーク(Layerd Network)
+![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/Neuronss.png)
