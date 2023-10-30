@@ -277,7 +277,31 @@ double f(double u)
     // return 1.0 / (1.0 + exp(-u));
 }
 ```
+### w2の重みを1.5にしたとき
+- AND
+```
+c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram>cd "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\" && gcc -fexec-charset=CP932 neuron.c -o neuron && "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\"neuron
+data24.txt
+データの個数:4
+0 0.000000 0.000000 0.000000
+1 0.000000 1.000000 0.000000
+2 1.000000 0.000000 0.000000
+3 1.000000 1.000000 1.000000
+```
+### w2の重みを0.5にしたとき
+- OR
+```
+C:\Users\TN256\OneDrive\ドキュメント\謝研>cd "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\" && gcc -fexec-charset=CP932 neuron.c -o neuron && "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\"neuron
+data24.txt
+データの個数:4
+0 0.000000 0.000000 0.000000
+1 0.000000 1.000000 1.000000
+2 1.000000 0.000000 1.000000
+3 1.000000 1.000000 1.000000
+```
 
+
+<br>
 
 ```C
 /********************************************/
@@ -463,4 +487,14 @@ double f(double u)
     /* シグモイド関数の計算 */
     // return 1.0 / (1.0 + exp(-u));
 }
+```
+### EOR ( 排他的論理和 )
+```
+C:\Users\TN256\OneDrive\ドキュメント\謝研>cd "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\" && gcc -fexec-charset=CP932 nn.c -o nn && "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\"nn
+data24.txt
+データの個数:4
+0 0.000000 0.000000 0.000000
+1 0.000000 1.000000 1.000000
+2 1.000000 0.000000 1.000000
+3 1.000000 1.000000 0.000000
 ```
