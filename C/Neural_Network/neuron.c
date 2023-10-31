@@ -35,7 +35,7 @@ int main(){
     int n_of_e;                         /* データの個数 */
 
     /* 重みの初期化 */
-    initwh(w);
+    initw(w);
 
     /* 入力データの読み込み */
     n_of_e = getdata(e);
