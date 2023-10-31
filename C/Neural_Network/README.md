@@ -490,6 +490,7 @@ double f(double u)
     // return 1.0 / (1.0 + exp(-u));
 }
 ```
+![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/nn_c.png)
 ### EOR ( 排他的論理和 )
 ```
 C:\Users\TN256\OneDrive\ドキュメント\謝研>cd "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\" && gcc -fexec-charset=CP932 nn.c -o nn && "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\"nn
