@@ -167,7 +167,7 @@ int main(){
     int n_of_e;                         /* データの個数 */
 
     /* 重みの初期化 */
-    initwh(w);
+    initw(w);
 
     /* 入力データの読み込み */
     n_of_e = getdata(e);
@@ -277,7 +277,7 @@ double f(double u)
     // return 1.0 / (1.0 + exp(-u));
 }
 ```
-### w2の重みを1.5にしたとき
+### w2のしきい値を1.5にしたとき
 - AND
 ```
 c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram>cd "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\" && gcc -fexec-charset=CP932 neuron.c -o neuron && "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\"neuron
@@ -288,7 +288,7 @@ data24.txt
 2 1.000000 0.000000 0.000000
 3 1.000000 1.000000 1.000000
 ```
-### w2の重みを0.5にしたとき
+### w2のしきい値を0.5にしたとき
 - OR
 ```
 C:\Users\TN256\OneDrive\ドキュメント\謝研>cd "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\" && gcc -fexec-charset=CP932 neuron.c -o neuron && "c:\Users\TN256\OneDrive\ドキュメント\謝研\AIProgram\"neuron
