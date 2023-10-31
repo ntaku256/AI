@@ -277,6 +277,8 @@ double f(double u)
     // return 1.0 / (1.0 + exp(-u));
 }
 ```
+![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/Neuron_C.png)
+
 ### w2のしきい値を1.5にしたとき
 - AND
 ```
