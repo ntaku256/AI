@@ -5,11 +5,12 @@
 - ニューロ素子やニューロセルとも呼ぶ。
 ### 神経細胞（ニューロン）
 ![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/Neurons.png)
+### 訂正！！人口ニューロン　→ 人工ニューロン
 [画像の参考URL](https://hombre-nuevo.com/machinelearning/machinelearning0001/)
 
 <br>
 
-# 人口ニューロンの中
+# 人工ニューロンの中
 ![](https://github.com/ntaku256/AI/blob/main/C/Neural_Network/Source/Function.png)
 - 入力：X1 ~ Xn
 - 重み(weight)：W1 ~ Wn
