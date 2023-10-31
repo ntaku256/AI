@@ -120,8 +120,12 @@ double forward (double w[INPUTNO + 1],double e[INPUTNO])
 void initw(double w[INPUTNO + 1])
 {
     /* 荷重を定数として与える */
+    
+    /* 重み */
     w[0] = 1;
     w[1] = 1;
+    
+    /* しきい値 */
     w[2] = 1.5;
     // w[2] = 0.5;
 }
