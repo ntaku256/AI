@@ -201,10 +201,15 @@
                         continue
                     else:
                         flag = False
-                    
+                    count = 0
+                    PutPosition = np.random.randint(len(arr))
+                    print(PutPosition)
                     for (yy,xx) in arr:
-                        y = int(yy)
-                        x = int(xx)
+                        if count == Putposition:
+                            y = int(yy)
+                            x = int(xx)
+                        print(count)
+                        count = count + 1
                     if not o.CanPut(y, x, color):
                         print("置やんぞ!!")
                     else:
