@@ -1,53 +1,317 @@
 <!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PyScript: Hello World!</title>
-    <link rel="stylesheet" href="https://pyscript.net/alpha/pyscript.css" />
-    <script defer src="https://pyscript.net/alpha/pyscript.js"></script>    
-    <style>      
-        .h1_article073 {
-            font-size:xx-large;
-        }
 
-        .button_article073 {
-          width: 150px;
-          background-color: #4c4faf;
-          color: white;
-          padding: 10px 10px;
-          margin: 8px 0;
-          border: none;
-          border-radius: 4px;
-          cursor: pointer;
-        }
-      
-        .button_article073:hover {
-          background-color: #45a049;
-        }
-      
-        .p_article073 {
-          border-radius: 5px;
-          color:coral;
-          background-color: #f2f2f2;
-          padding: 20px;
-        }
-      </style>
-</head>
-<body>
-    <h1 class="h1_article073">PyScript: Hello World!</h1>  
-    <button id="say_hello" class="button_article073" pys-onClick="say_hello">Say Hello!</button>
-    <hr />
-    <p id="output" class="p_article073"></p>    
+<html lang="ja">
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+        <!-- Pythonのライブラリをインストールします -->
+        <py-config>
+            packages = ["matplotlib", "pandas", "numpy","scikit-learn"]
+        </py-config>
+        <style>      
+            .h1_article073 {
+                font-size:xx-large;
+            }
     
-    <py-script>
-        def say_hello(*args, **kwargs):
-            console.log(f'args: {args}')
-            console.log(f'kwargs: {kwargs}')
+            .button_article073 {
+              width: 150px;
+              background-color: #4c4faf;
+              color: white;
+              padding: 10px 10px;
+              margin: 8px 0;
+              border: none;
+              border-radius: 4px;
+              cursor: pointer;
+            }
+          
+            .button_article073:hover {
+              background-color: #45a049;
+            }
+          
+            .p_article073 {
+              border-radius: 5px;
+              color:coral;
+              background-color: #f2f2f2;
+              padding: 20px;
+            }
+        </style>
+    </head>
+    <body>
+        <div id="manual-write"></div>
+        <h1 class="h1_article073">PyScript: Hello World!</h1>  
+        <button id="say_hello" class="button_article073" pys-onClick="say_hello">Say Hello!</button>
+        <hr />
+        <p id="output" class="p_article073"></p>    
 
-            pyscript.write('output', 'Hello World!')    
-    </py-script>    
-</body>
+        <py-script class="Osero">
+            import numpy as np
+            import matplotlib.pyplot as plt
+            import matplotlib.animation as anime
+            from sklearn.cluster import KMeans
+            import random
+
+            def say_hello(*args, **kwargs):
+                console.log(f'args: {args}')
+                console.log(f'kwargs: {kwargs}')
+                pyscript.write('output', 'Hello World!')    
+
+            class Osero:
+                Width = 8
+                Height = 8
+
+                #white:0, black:1, empty:-1
+                Field = None
+
+                def __init__(self):
+                    self.Field = [[-1 for i in range(self.Width)] for i in range(self.Height)]
+                    self.Field[3][3] = 0
+                    self.Field[3][4] = 1
+                    self.Field[4][3] = 1
+                    self.Field[4][4] = 0
+
+                def Disp(self):
+                    s = ""
+                    s += "--"
+                    for i in range(self.Width):
+                        s += "|-"+str(i)+"-"
+                    s += "<br>"
+                    for i in range(self.Height):
+                        s += str(i) + " "
+                        for j in range(self.Width):
+                            if self.Field[i][j] == 0:
+                                s += "|● "
+                            if self.Field[i][j] == 1:
+                                s += "|○ "
+                            if self.Field[i][j] == -1:
+                                s += "|   "
+                        s += "|<br>"
+                    s += "<br>"
+                    manual_div = Element("manual-write")
+                    manual_div.element.innerHTML = s
+
+                def Put(self,y,x,color):
+                    dxArr = [0,1,1,1,0,-1,-1,-1]
+                    dyArr = [1,1,0,-1,-1,-1,0,1]
+                    for dx,dy in zip(dxArr,dyArr):
+                        if(l := self.CheckDepth(color,y,x,dy,dx),l!=-1):
+                            xx = x
+                            yy = y
+                            for i in range(l+1):
+                                self.Field[yy][xx] = color
+                                xx += dx
+                                yy += dy
+
+                def CheckDepth(self,color,y,x,dy,dx):
+                    depth = 0
+                    while(True):
+                        y += dy
+                        x += dx
+                        if(self.IsInside(y,x)==False or self.Field[y][x] == -1):
+                            return -1
+                        if(self.Field[y][x] == color):
+                            return depth
+                        depth += 1
+
+                def IsInside(self,y,x):
+                    return x >= 0 and x < self.Width and y >= 0 and y < self.Height
+
+                def CanPut(self,y,x,color):
+                    if not self.IsInside(y, x) or self.Field[y][x] != -1:
+                        return False
+                    flag = False
+                    dxArr = [0,1,1,1,0,-1,-1,-1]
+                    dyArr = [1,1,0,-1,-1,-1,0,1]
+                    for dx,dy in zip(dxArr,dyArr):
+                        if(self.CheckDepth(color,y,x,dy,dx) > 0):
+                            return True
+
+                def GetPossiblePutPositionAndValue(self,color,stoneMap):
+                    positions = []
+                    values = []
+                    for y in range(self.Height):
+                        for x in range(self.Width):
+                            if self.CanPut(y,x,color):
+                                positions.append([y,x])
+                                values.append(self.CalcStoneValue(y,x,color,stoneMap))
+                    return positions,values
+
+                # stoneMap: array(width * height)
+                def CalcStoneValue(self,y,x,color,stoneMap):
+                    dxArr = [0,1,1,1,0,-1,-1,-1]
+                    dyArr = [1,1,0,-1,-1,-1,0,1]
+                    value = stoneMap[y][x]
+                    for dx,dy in zip(dxArr,dyArr):
+                        if(l := self.CheckDepth(color,y,x,dy,dx),l!=-1):
+                            xx = x+dx
+                            yy = y+dy
+                            for _ in range(l):
+                                if self.Field[yy][xx] != color:
+                                    value += stoneMap[yy][xx]
+                                xx += dx
+                                yy += dy
+                    return value
+                
+                def Result(self):
+                    n_white = 0
+                    n_black = 0
+                    n_sum = 0
+                    for y in range(self.Height):
+                        for x in range(self.Width):
+                            if self.Field[y][x] == -1:
+                                continue
+                            n_sum += 1
+                            if self.Field[y][x] == 0:
+                                n_white += 1
+                            if self.Field[y][x] == 1:
+                                n_black += 1
+                    return n_white,n_black,n_sum
+
+            def PlayOsero(stoneMap1,stoneMap2):
+                o = Osero()
+                flag = False
+                color = 0
+                while(True):
+                    o.Disp()
+                    stoneMap = None
+                    if color == 0:
+                        stoneMap = stoneMap1
+                    else:
+                        stoneMap = stoneMap2
+                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
+
+                    ## 二連続でどっちも置く場所がなければ終わり
+                    if len(arr) == 0:
+                        if flag:
+                            break
+                        color = (color + 1)%2
+                        flag = True
+                        continue
+                    else:
+                        flag = False
+                    best_hand_arg = np.argmax(values)
+                    best_hand = arr[best_hand_arg]
+                    o.Put(best_hand[0],best_hand[1],color)
+                    color = (color + 1)%2
+                return o.Result()
+
+            
+            
+            
+
+
+            def Evaluate(stoneMap1,stoneMap2):
+                n_white,n_black,n_sum = PlayOsero(stoneMap1,stoneMap2)
+                return n_white + 8*8 - n_sum
+            
+            def Pareto(mode,a,shape):
+                return (np.random.pareto(a,size=shape)+1)*mode
+            
+            def roulett(table):
+                total = np.sum(table)
+                rand = np.random.uniform(0.0,total)
+                sum = 0
+                for i in range(len(table)):
+                    sum += table[i]
+                    if(sum > rand):
+                        return i
+            
+            def filtIndivisual(vector):
+                for i in range(8*8):
+                    vector[i] = max(-30,min(30,vector[i]))
+            
+            def InitIndivisual():
+                return np.random.uniform(-30,30,(8*8))
+            
+            def EvalIndivisual(vector1,vector2):
+                return Evaluate(vector1.reshape((8,8)),vector2.reshape((8,8)))
+            
+            
+            class PSO:
+                n_iter = None
+                n_swarm = None
+                w = None
+                c1 = None
+                c2 = None
+                vectors = None
+                scores = None
+                g_best_score = None
+                g_best_vector = None
+                p_best_scores = None
+                p_best_vectors = None
+            
+                def __init__(self,n_iter,n_swarm,w,c1,c2):
+                    self.n_iter = n_iter
+                    self.n_swarm = n_swarm
+                    self.w = w
+                    self.c1 = c1
+                    self.c2 = c2
+                    self.InitSwarms()
+                    self.CalcScores()
+            
+                def InitSwarms(self):
+                    self.vectors = np.array([InitIndivisual() for _ in range(self.n_swarm)])
+                    self.speeds = np.zeros_like(self.vectors)
+                    self.p_best_scores = np.zeros(self.n_swarm)
+                    self.p_best_vectors = np.zeros_like(self.vectors)
+                    self.g_best_score = 0
+                    self.g_best_vector= np.zeros_like(self.vectors[0])
+                    self.scores = np.zeros(self.n_swarm)
+                
+                def CalcScores(self):
+                    enemy = np.random.randint(0,self.n_swarm,1)
+                    for i in range(self.n_swarm):
+                        new_score = EvalIndivisual(self.vectors[i],self.vectors[enemy])
+                        if new_score > self.p_best_scores[i]:
+                            self.p_best_scores[i] = new_score
+                            self.p_best_vectors[i] = np.copy(self.vectors[i])
+                        if new_score > self.g_best_score:
+                            self.g_best_score = new_score
+                            self.g_best_vector = np.copy(self.vectors[i])
+                        self.scores[i] = new_score
+            
+                def UpdateVectors(self):
+                    for i in range(self.n_swarm):
+                        r1 = np.random.uniform(0,1,self.vectors[0].shape)
+                        r2 = np.random.uniform(0,1,self.vectors[0].shape)
+                        self.speeds[i] = self.w*self.speeds[i]+r1*(self.p_best_vectors[i]-self.vectors[i])+r2*(self.g_best_vector-self.vectors[i])
+                        self.vectors[i] = self.vectors[i] + self.speeds[i]
+            
+                def Run(self):
+                    for i in range(self.n_iter):
+                        self.CalcScores()
+                        self.UpdateVectors()
+                    return self.g_best_score,self.g_best_vector
+
+            
+
+            if __name__ == "__main__":
+                n_indivisuals = 150
+                n_iters = 10
+                n_clusters = 10
+                c1 = 0.7
+                c2 = 0.7
+                w = 0.9
+                pso = PSO(n_iters,n_indivisuals,w,c1,c2)
+                flag = True
+                # pso,if
+                
+                result = []
+                
+                for i in range(1):
+                    _,pso_res = pso.Run()
+                    if flag:
+                        n_white,n_black,_ = PlayOsero(pso_res.reshape((8,8)),pso_res.reshape((8,8)))
+                        result.append([n_white,n_black])
+                    else:
+                        n_white,n_black,_ = PlayOsero(pso_res.reshape((8,8)),pso_res.reshape((8,8)))
+                        result.append([n_black,n_white])
+                    flag = not flag
+                print(result)
+            
+        </py-script>
+    </body>
 </html>
-
