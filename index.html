@@ -236,13 +236,13 @@
                     ## 二連続でどっちも置く場所がなければ終わり
                     if len(arr) == 0:
                         if flag:
-                            loopon = False
-                        if loopon == True:
+                            self.loopon = False
+                        if self.loopon == True:
                             color = (color + 1)%2
                             flag = True
                     else:
                         flag = False
-                    if loopon == True:
+                    if self.loopon == True:
                         if not self.CanPut(selected_y, selected_x, self.color):
                             print("置やんぞ!!")
                         else:
