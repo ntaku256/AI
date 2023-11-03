@@ -223,15 +223,15 @@
                     selected_y = int(selectvalue)//8
                     selected_x = int(selectvalue)%8
                     Element("text").write("[ "+str(selected_y)+" , "+str(selected_x)+" ]")
-                    if color == 0:
+                    if self.color == 0:
                         print("●の番です")
                     else:
                         print("○の番です")
-                    if not self.CanPut(selected_y, selected_x, color):
+                    if not self.CanPut(selected_y, selected_x, self.color):
                         print("置やんぞ!!")
                     else:
-                        self.Put(selected_y,selected_x,color)
-                        color = (color + 1)%2
+                        self.Put(selected_y,selected_x,self.color)
+                        self.color = (self.color + 1)%2
                     self.Disp()
                     
                         
