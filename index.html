@@ -73,13 +73,7 @@
         <div id="text2"></div>
 
         <py-script>
-            def clicked():
-                radios = js.document.getElementsByName("test1")
-                for radio in radios:
-                    if radio.checked:
-                        y = int(radio.value)//8
-                        x = int(radio.value)%8
-                        Element("text").write("[ "+str(y)+" , "+str(x)+" ]")
+            
         </py-script>
         <py-script class="Osero">
             import numpy as np
@@ -330,30 +324,25 @@
                         self.CalcScores()
                         self.UpdateVectors()
                     return self.g_best_score,self.g_best_vector
-                            
-            if __name__ == "__main__":
-                n_indivisuals = 150
-                n_iters = 10
-                n_clusters = 10
-                c1 = 0.7
-                c2 = 0.7
-                w = 0.9
-                pso = PSO(n_iters,n_indivisuals,w,c1,c2)
-                flag = True
-                # pso,if
-                    
-                result = []
-                    
-                for i in range(1):
-                    _,pso_res = pso.Run()
-                    if flag:
-                        n_white,n_black,_ = PlayOsero(pso_res.reshape((8,8)),pso_res.reshape((8,8)))
-                        result.append([n_white,n_black])
-                    else:
-                        n_white,n_black,_ = PlayOsero(pso_res.reshape((8,8)),pso_res.reshape((8,8)))
-                        result.append([n_black,n_white])
-                    flag = not flag
-                print(result) 
+
+                        
+            def clicked():
+                radios = js.document.getElementsByName("test1")
+                for radio in radios:
+                    if radio.checked:
+                        y = int(radio.value)//8
+                        x = int(radio.value)%8
+                        Element("text").write("[ "+str(y)+" , "+str(x)+" ]")
+                        o = Osero()
+                        arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
+
+                        ## 二連続でどっちも置く場所がなければ終わり
+                        if len(arr) == 0:
+                        else
+                            o.Put(best_hand[0],best_hand[1],color)
+                        color = (color + 1)%2
+                        o.Disp()
+                        return o.Result()
         </py-script>
         <!-- if __name__ == "__main__":
                 n_indivisuals = 150
