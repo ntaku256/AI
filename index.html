@@ -216,13 +216,13 @@
                     arr,values = self.GetPossiblePutPositionAndValue(self.color,stoneMap)
                     ## 二連続でどっちも置く場所がなければ終わり
                     if len(arr) == 0:
-                        if flag:
+                        if self.flag:
                             self.loopon = False
                         if self.loopon == True:
                             color = (color + 1)%2
-                            flag = True
+                            self.flag = True
                     else:
-                        flag = False
+                        self.flag = False
                     if self.loopon == True:
                         if not self.CanPut(selected_y, selected_x, self.color):
                             print("置やんぞ!!")
@@ -233,40 +233,11 @@
                                 print("○の番です")
                             else:
                                 print("●の番です")
+                    else:
+                        n_white,n_black,n_sum = self.Result()
+                        print("white:",n_white,"black:",n_black,"total:",n_sum) 
                     self.Disp()
                     
-                        
-
-            def PlayOsero(stoneMap1,stoneMap2):
-                o = Osero()
-                flag = False
-                color = 0
-                while(True):
-                    stoneMap = None
-                    if color == 0:
-                        stoneMap = stoneMap1
-                    else:
-                        stoneMap = stoneMap2
-                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
-
-                    ## 二連続でどっちも置く場所がなければ終わり
-                    if len(arr) == 0:
-                        if flag:
-                            break
-                        color = (color + 1)%2
-                        flag = True
-                        continue
-                    else:
-                        flag = False
-                    best_hand_arg = np.argmax(values)
-                    best_hand = arr[best_hand_arg]
-                    o.Put(best_hand[0],best_hand[1],color)
-                    color = (color + 1)%2
-                o.Disp()
-                return o.Result()
-                        
-
-
             def Evaluate(stoneMap1,stoneMap2):
                 n_white,n_black,n_sum = PlayOsero(stoneMap1,stoneMap2)
                 return n_white + 8*8 - n_sum
@@ -359,92 +330,6 @@
                     if radio.checked:
                         o.playosero(radio.value)
         </py-script>
-        <!-- if __name__ == "__main__":
-                n_indivisuals = 150
-                n_iters = 10
-                n_clusters = 10
-                c1 = 0.7
-                c2 = 0.7
-                w = 0.9
-                pso = PSO(n_iters,n_indivisuals,w,c1,c2)
-                flag = True
-                # pso,if
-                
-                result = []
-                
-                for i in range(1):
-                    _,pso_res = pso.Run()
-                    if flag:
-                        n_white,n_black,_ = PlayOsero(pso_res.reshape((8,8)),pso_res.reshape((8,8)))
-                        result.append([n_white,n_black])
-                    else:
-                        n_white,n_black,_ = PlayOsero(pso_res.reshape((8,8)),pso_res.reshape((8,8)))
-                        result.append([n_black,n_white])
-                    flag = not flag
-                print(result) 
-            if __name__ == '__main__':
-                o = Osero()
-                color = 0
-                """
-                stoneMap = [
-                        [30,-12,0,-1,-1,0,-12,30],
-                        [-12,-15,-3,-3,-3,-15,-15,-12],
-                        [0,-3,0,-1,-1,0,-3,0],
-                        [-1,-3,-1,-1,-1,-1,-3,-1],
-                        [-1,-3,-1,-1,-1,-1,-3,-1],
-                        [0,-3,0,-1,-1,0,-3,0],
-                        [-12,-15,-3,-3,-3,-15,-15,-12],
-                        [30,-12,0,-1,-1,0,-12,30],
-                        ]
-                """
-                stoneMap = [[  4.64442892,-5.94676174  ,-8.22406289,-3.54108864,14.449 ,-12.25701246, -4.85005069, -3.0631509 ],
-                    [  2.44601732 , 7.28178502,  3.87052249, -6.61112403 , 2.88436812, 2.28200454 , 2.88739893 , 6.69401217],
-                    [ -9.63874628 , 1.33511466 , 3.94920367 , 4.25621057 , 8.48590166, -18.34996554,  4.75598223 , -5.86846399],
-                    [-21.5525791 ,-10.40855294,  9.65304426 ,-6.7865024  , 3.43632992,1.78858655,  8.07561675, 3.20647401],
-                    [  3.35587021 ,-5.91740211, -3.10004183, 16.31703601, -2.99102139,4.97680409,  4.27546672, -2.95882175],
-                    [  1.82883348 ,-3.98875031 , 3.50467481  ,5.20606844, -0.58939011, -6.0727421,  2.78332894, -4.35495494],
-                    [ -8.55768735,-5.81515668, 3.06846976 , -4.45747499 , -2.30405207 ,-4.10293077 ,-4.88844761 , 5.65605183],
-                    [  0.51941962, -1.71454956 ,-6.73718104, -6.2447815  , 3.09940919 ,5.71136616 ,-4.03695552 ,-1.24283584]]
-                flag = False
-                while(True):
-                    if color == 0:
-                        print("●の番です")
-                    else:
-                        print("○の番です")
-                    o.Disp()
-                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap)
-                    ## 二連続でどっちも置く場所がなければ終わり
-                    if len(arr) == 0:
-                        if flag:
-                            break
-                        color = (color + 1)%2
-                        flag = True
-                        continue
-                    else:
-                        flag = False
-                    print("選択してください")
-                    select_true = False
-                    while(True){
-                        if(select_xy == True and previous_x != select_x and previous_y != select_y){
-                            for (yy,xx) in arr:
-                                if select_y == yy and select_x == xx :
-                                    previous_y = select_y
-                                    previous_x = select_x
-                                    y = int(select_y)
-                                    x = int(select_x)
-                                    select_true = True
-                            if select_true = False:
-                                print("選択しなおしてください")
-                        }
-                    }
-                    if not o.CanPut(y, x, color):
-                        print("置やんぞ!!")
-                    else:
-                        o.Put(y,x,color)
-                        color = (color + 1)%2
-                n_white,n_black,n_sum = o.Result()
-                print("white:",n_white,"black:",n_black,"total:",n_sum) 
-            -->   
     </body>
 </html>
 
