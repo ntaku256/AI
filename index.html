@@ -38,26 +38,55 @@
               background-color: #f2f2f2;
               padding: 20px;
             }
+            .button{
+                margin-left: 20px;
+                margin-top:20px ;
+                transform:scale(2);
+            }
+            .button-select{
+                margin-top: 20px;
+                height: 40px;
+                width: 100px;
+            }
         </style>
     </head>
     <body>
         <div id="manual-write"></div>
-        <h1 class="h1_article073">PyScript: Hello World!</h1>  
-        <button id="say_hello" class="button_article073" pys-onClick="say_hello">Say Hello!</button>
-        <hr />
-        <p id="output" class="p_article073"></p>    
+        <input type='radio' class="button" id='radio1' name='test1' value="0">    <input type='radio' class="button" id='radio1' name='test1' value="1">    <input type='radio' class="button" id='radio1' name='test1' value="2">    <input type='radio' class="button" id='radio1' name='test1' value="3">    
+        <input type='radio' class="button" id='radio1' name='test1' value="4">    <input type='radio' class="button" id='radio1' name='test1' value="5">      <input type='radio' class="button" id='radio1' name='test1' value="6">    <input type='radio' class="button" id='radio1' name='test1' value="7"><br>
+        <input type='radio' class="button" id='radio1' name='test1' value="8">    <input type='radio' class="button" id='radio1' name='test1' value="9">    <input type='radio' class="button" id='radio1' name='test1' value="10">    <input type='radio' class="button" id='radio1' name='test1' value="11">    
+        <input type='radio' class="button" id='radio1' name='test1' value="12">    <input type='radio' class="button" id='radio1' name='test1' value="13">      <input type='radio' class="button" id='radio1' name='test1' value="14">    <input type='radio' class="button" id='radio1' name='test1' value="15"><br>
+        <input type='radio' class="button" id='radio1' name='test1' value="16">    <input type='radio' class="button" id='radio1' name='test1' value="17">    <input type='radio' class="button" id='radio1' name='test1' value="18">    <input type='radio' class="button" id='radio1' name='test1' value="19">    
+        <input type='radio' class="button" id='radio1' name='test1' value="20">    <input type='radio' class="button" id='radio1' name='test1' value="21">      <input type='radio' class="button" id='radio1' name='test1' value="22">    <input type='radio' class="button" id='radio1' name='test1' value="23"><br>
+        <input type='radio' class="button" id='radio1' name='test1' value="24">    <input type='radio' class="button" id='radio1' name='test1' value="25">    <input type='radio' class="button" id='radio1' name='test1' value="26">    <input type='radio' class="button" id='radio1' name='test1' value="27">    
+        <input type='radio' class="button" id='radio1' name='test1' value="28">    <input type='radio' class="button" id='radio1' name='test1' value="29">      <input type='radio' class="button" id='radio1' name='test1' value="30">    <input type='radio' class="button" id='radio1' name='test1' value="31"><br>
+        <input type='radio' class="button" id='radio1' name='test1' value="32">    <input type='radio' class="button" id='radio1' name='test1' value="33">    <input type='radio' class="button" id='radio1' name='test1' value="34">    <input type='radio' class="button" id='radio1' name='test1' value="35">    
+        <input type='radio' class="button" id='radio1' name='test1' value="36">    <input type='radio' class="button" id='radio1' name='test1' value="37">      <input type='radio' class="button" id='radio1' name='test1' value="38">    <input type='radio' class="button" id='radio1' name='test1' value="39"><br>
+        <input type='radio' class="button" id='radio1' name='test1' value="40">    <input type='radio' class="button" id='radio1' name='test1' value="41">    <input type='radio' class="button" id='radio1' name='test1' value="42">    <input type='radio' class="button" id='radio1' name='test1' value="43">    
+        <input type='radio' class="button" id='radio1' name='test1' value="44">    <input type='radio' class="button" id='radio1' name='test1' value="45">      <input type='radio' class="button" id='radio1' name='test1' value="46">    <input type='radio' class="button" id='radio1' name='test1' value="47"><br>
+        <input type='radio' class="button" id='radio1' name='test1' value="48">    <input type='radio' class="button" id='radio1' name='test1' value="49">    <input type='radio' class="button" id='radio1' name='test1' value="50">    <input type='radio' class="button" id='radio1' name='test1' value="51">    
+        <input type='radio' class="button" id='radio1' name='test1' value="52">    <input type='radio' class="button" id='radio1' name='test1' value="53">      <input type='radio' class="button" id='radio1' name='test1' value="54">    <input type='radio' class="button" id='radio1' name='test1' value="55"><br>
+        <input type='radio' class="button" id='radio1' name='test1' value="56">    <input type='radio' class="button" id='radio1' name='test1' value="57">    <input type='radio' class="button" id='radio1' name='test1' value="58">    <input type='radio' class="button" id='radio1' name='test1' value="59">    
+        <input type='radio' class="button" id='radio1' name='test1' value="60">    <input type='radio' class="button" id='radio1' name='test1' value="61">      <input type='radio' class="button" id='radio1' name='test1' value="62">    <input type='radio' class="button" id='radio1' name='test1' value="63"><br>
+        <button class="button-select" py-click="clicked()" id="button">Button</button>
+        <div id="text"></div>
+        <div id="text2"></div>
 
+        <py-script>
+            def clicked():
+                radios = js.document.getElementsByName("test1")
+                for radio in radios:
+                    if radio.checked:
+                        x = int(radio.value)//8
+                        y = int(radio.value)%8
+                        Element("text").write("[ "+str(y)+" , "+str(x)+" ]")
+        </py-script>
         <py-script class="Osero">
             import numpy as np
             import matplotlib.pyplot as plt
             import matplotlib.animation as anime
             from sklearn.cluster import KMeans
             import random
-
-            def say_hello(*args, **kwargs):
-                console.log(f'args: {args}')
-                console.log(f'kwargs: {kwargs}')
-                pyscript.write('output', 'Hello World!')    
 
             class Osero:
                 Width = 8
@@ -92,6 +121,25 @@
                     s += "<br>"
                     manual_div = Element("manual-write")
                     manual_div.element.innerHTML = s
+                
+                def Disp12(self):
+                    s = ""
+                    s += "--"
+                    for i in range(self.Width):
+                        s += "|-"+str(i)+"-"
+                    s += "\n"
+                    for i in range(self.Height):
+                        s += str(i) + " "
+                        for j in range(self.Width):
+                            if self.Field[i][j] == 0:
+                                s += "|● "
+                            if self.Field[i][j] == 1:
+                                s += "|○ "
+                            if self.Field[i][j] == -1:
+                                s += "|   "
+                        s += "|\n"
+                    s += "\n"
+                    print(s)
 
                 def Put(self,y,x,color):
                     dxArr = [0,1,1,1,0,-1,-1,-1]
@@ -175,7 +223,7 @@
                 flag = False
                 color = 0
                 while(True):
-                    o.Disp()
+                    o.Disp12()
                     stoneMap = None
                     if color == 0:
                         stoneMap = stoneMap1
@@ -196,11 +244,9 @@
                     best_hand = arr[best_hand_arg]
                     o.Put(best_hand[0],best_hand[1],color)
                     color = (color + 1)%2
+                o.Disp()
                 return o.Result()
-
-            
-            
-            
+                        
 
 
             def Evaluate(stoneMap1,stoneMap2):
@@ -285,10 +331,32 @@
                         self.CalcScores()
                         self.UpdateVectors()
                     return self.g_best_score,self.g_best_vector
-
-            
-
+                            
             if __name__ == "__main__":
+                n_indivisuals = 150
+                n_iters = 10
+                n_clusters = 10
+                c1 = 0.7
+                c2 = 0.7
+                w = 0.9
+                pso = PSO(n_iters,n_indivisuals,w,c1,c2)
+                flag = True
+                # pso,if
+                    
+                result = []
+                    
+                for i in range(1):
+                    _,pso_res = pso.Run()
+                    if flag:
+                        n_white,n_black,_ = PlayOsero(pso_res.reshape((8,8)),pso_res.reshape((8,8)))
+                        result.append([n_white,n_black])
+                    else:
+                        n_white,n_black,_ = PlayOsero(pso_res.reshape((8,8)),pso_res.reshape((8,8)))
+                        result.append([n_black,n_white])
+                    flag = not flag
+                print(result) 
+        </py-script>
+        <!-- if __name__ == "__main__":
                 n_indivisuals = 150
                 n_iters = 10
                 n_clusters = 10
@@ -310,8 +378,70 @@
                         n_white,n_black,_ = PlayOsero(pso_res.reshape((8,8)),pso_res.reshape((8,8)))
                         result.append([n_black,n_white])
                     flag = not flag
-                print(result)
-            
-        </py-script>
+                print(result) 
+            if __name__ == '__main__':
+                o = Osero()
+                color = 0
+                """
+                stoneMap = [
+                        [30,-12,0,-1,-1,0,-12,30],
+                        [-12,-15,-3,-3,-3,-15,-15,-12],
+                        [0,-3,0,-1,-1,0,-3,0],
+                        [-1,-3,-1,-1,-1,-1,-3,-1],
+                        [-1,-3,-1,-1,-1,-1,-3,-1],
+                        [0,-3,0,-1,-1,0,-3,0],
+                        [-12,-15,-3,-3,-3,-15,-15,-12],
+                        [30,-12,0,-1,-1,0,-12,30],
+                        ]
+                """
+                stoneMap = [[  4.64442892,-5.94676174  ,-8.22406289,-3.54108864,14.449 ,-12.25701246, -4.85005069, -3.0631509 ],
+                    [  2.44601732 , 7.28178502,  3.87052249, -6.61112403 , 2.88436812, 2.28200454 , 2.88739893 , 6.69401217],
+                    [ -9.63874628 , 1.33511466 , 3.94920367 , 4.25621057 , 8.48590166, -18.34996554,  4.75598223 , -5.86846399],
+                    [-21.5525791 ,-10.40855294,  9.65304426 ,-6.7865024  , 3.43632992,1.78858655,  8.07561675, 3.20647401],
+                    [  3.35587021 ,-5.91740211, -3.10004183, 16.31703601, -2.99102139,4.97680409,  4.27546672, -2.95882175],
+                    [  1.82883348 ,-3.98875031 , 3.50467481  ,5.20606844, -0.58939011, -6.0727421,  2.78332894, -4.35495494],
+                    [ -8.55768735,-5.81515668, 3.06846976 , -4.45747499 , -2.30405207 ,-4.10293077 ,-4.88844761 , 5.65605183],
+                    [  0.51941962, -1.71454956 ,-6.73718104, -6.2447815  , 3.09940919 ,5.71136616 ,-4.03695552 ,-1.24283584]]
+                flag = False
+                while(True):
+                    if color == 0:
+                        print("●の番です")
+                    else:
+                        print("○の番です")
+                    o.Disp()
+                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap)
+                    ## 二連続でどっちも置く場所がなければ終わり
+                    if len(arr) == 0:
+                        if flag:
+                            break
+                        color = (color + 1)%2
+                        flag = True
+                        continue
+                    else:
+                        flag = False
+                    print("選択してください")
+                    select_true = False
+                    while(True){
+                        if(select_xy == True and previous_x != select_x and previous_y != select_y){
+                            for (yy,xx) in arr:
+                                if select_y == yy and select_x == xx :
+                                    previous_y = select_y
+                                    previous_x = select_x
+                                    y = int(select_y)
+                                    x = int(select_x)
+                                    select_true = True
+                            if select_true = False:
+                                print("選択しなおしてください")
+                        }
+                    }
+                    if not o.CanPut(y, x, color):
+                        print("置やんぞ!!")
+                    else:
+                        o.Put(y,x,color)
+                        color = (color + 1)%2
+                n_white,n_black,n_sum = o.Result()
+                print("white:",n_white,"black:",n_black,"total:",n_sum) 
+            -->   
     </body>
 </html>
+
