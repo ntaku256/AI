@@ -73,19 +73,7 @@
         <div id="text2"></div>
 
         <py-script>
-            count = 0
-            def clicked():
-                    radios = js.document.getElementsByName("test1")
-                    for radio in radios:
-                        if radio.checked:
-                            select_y = int(radio.value)//8
-                            select_x = int(radio.value)%8
-                            Element("text").write("[ "+str(select_y)+" , "+str(select_x)+" ]")
-                            o = Osero()
-                            o.Put(select_y,select_x,0)
-                            o.Disp()
-                            count = count + 1
-                            display(count)
+
             
         </py-script>
         <py-script class="Osero">
@@ -98,6 +86,8 @@
             class Osero:
                 Width = 8
                 Height = 8
+                selected_y = 0
+                selected_x = 0
 
                 #white:0, black:1, empty:-1
                 Field = None
@@ -225,6 +215,11 @@
                                 n_black += 1
                     return n_white,n_black,n_sum
 
+                def playosero(self,selectvalue):
+                    selected_y = int(selectvalue)//8
+                    selected_x = int(selectvalue)%8
+                        
+
             def PlayOsero(stoneMap1,stoneMap2):
                 o = Osero()
                 flag = False
@@ -338,7 +333,16 @@
                         self.UpdateVectors()
                     return self.g_best_score,self.g_best_vector
 
-            
+                        
+            def clicked():
+                radios = js.document.getElementsByName("test1")
+                for radio in radios:
+                    if radio.checked:
+                        select_y = int(radio.value)//8
+                        select_x = int(radio.value)%8
+                        Element("text").write("[ "+str(select_y)+" , "+str(select_x)+" ]")
+                        o = Osero()
+                        o.playosero(radio.value)
         </py-script>
         <!-- if __name__ == "__main__":
                 n_indivisuals = 150
