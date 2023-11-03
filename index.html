@@ -91,6 +91,7 @@
                 selected_x = 0
                 flag = False
                 color = 0
+                loopon = True
 
                 #white:0, black:1, empty:-1
                 Field = None
@@ -232,15 +233,17 @@
                     ## 二連続でどっちも置く場所がなければ終わり
                     if len(arr) == 0:
                         if flag:
-                            break
-                        color = (color + 1)%2
-                        flag = True
+                            loopon = False
+                        if loopon == True
+                            color = (color + 1)%2
+                            flag = True
                     else:
                         flag = False
-                    for (yy,xx) in arr:
-                        if selected_y == yy and selected_x == xx :
-                            o.Put(selected_y,selected_x,color)
-                    color = (color + 1)%2
+                    if loopon == True
+                        for (yy,xx) in arr:
+                            if selected_y == yy and selected_x == xx :
+                                o.Put(selected_y,selected_x,color)
+                        color = (color + 1)%2
                     o.Disp()
                         
 
