@@ -122,25 +122,6 @@
                     s += "<br>"
                     manual_div = Element("manual-write")
                     manual_div.element.innerHTML = s
-                
-                def Disp12(self):
-                    s = ""
-                    s += "--"
-                    for i in range(self.Width):
-                        s += "|-"+str(i)+"-"
-                    s += "\n"
-                    for i in range(self.Height):
-                        s += str(i) + " "
-                        for j in range(self.Width):
-                            if self.Field[i][j] == 0:
-                                s += "|● "
-                            if self.Field[i][j] == 1:
-                                s += "|○ "
-                            if self.Field[i][j] == -1:
-                                s += "|   "
-                        s += "|\n"
-                    s += "\n"
-                    print(s)
 
                 def Put(self,y,x,color):
                     dxArr = [0,1,1,1,0,-1,-1,-1]
@@ -249,9 +230,9 @@
                             self.Put(selected_y,selected_x,self.color)
                             self.color = (self.color + 1)%2
                             if self.color == 0:
-                                print("●の番です")
-                            else:
                                 print("○の番です")
+                            else:
+                                print("●の番です")
                     self.Disp()
                     
                         
