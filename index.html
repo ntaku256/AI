@@ -349,12 +349,11 @@
                         self.UpdateVectors()
                     return self.g_best_score,self.g_best_vector
 
-                        
+            o = Osero()        
             def clicked():
                 radios = js.document.getElementsByName("test1")
                 for radio in radios:
                     if radio.checked:
-                        o = Osero()
                         o.playosero(radio.value)
         </py-script>
         <!-- if __name__ == "__main__":
