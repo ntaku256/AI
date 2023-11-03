@@ -86,8 +86,11 @@
             class Osero:
                 Width = 8
                 Height = 8
+            
                 selected_y = 0
                 selected_x = 0
+                flag = False
+                color = 0
 
                 #white:0, black:1, empty:-1
                 Field = None
@@ -219,6 +222,26 @@
                     selected_y = int(selectvalue)//8
                     selected_x = int(selectvalue)%8
                     Element("text").write("[ "+str(selected_y)+" , "+str(selected_x)+" ]")
+                    stoneMap = None
+                    if color == 0:
+                        stoneMap = stoneMap1
+                    else:
+                        stoneMap = stoneMap2
+                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
+
+                    ## 二連続でどっちも置く場所がなければ終わり
+                    if len(arr) == 0:
+                        if flag:
+                            break
+                        color = (color + 1)%2
+                        flag = True
+                    else:
+                        flag = False
+                    for (yy,xx) in arr:
+                        if selected_y == yy and selected_x == xx :
+                            o.Put(selected_y,selected_x,color)
+                    color = (color + 1)%2
+                    o.Disp()
                         
 
             def PlayOsero(stoneMap1,stoneMap2):
@@ -339,8 +362,6 @@
                 radios = js.document.getElementsByName("test1")
                 for radio in radios:
                     if radio.checked:
-                        select_y = int(radio.value)//8
-                        select_x = int(radio.value)%8
                         o = Osero()
                         o.playosero(radio.value)
         </py-script>
