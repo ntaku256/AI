@@ -333,6 +333,7 @@
                             select_x = int(radio.value)%8
                             Element("text").write("[ "+str(select_y)+" , "+str(select_x)+" ]")
                             o = Osero()
+                            o.Put(select_y,select_x,0)
                             o.Disp()
         </py-script>
         <!-- if __name__ == "__main__":
