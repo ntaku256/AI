@@ -325,6 +325,7 @@
                         self.UpdateVectors()
                     return self.g_best_score,self.g_best_vector
 
+            count = 0
             def clicked():
                     radios = js.document.getElementsByName("test1")
                     for radio in radios:
@@ -335,6 +336,8 @@
                             o = Osero()
                             o.Put(select_y,select_x,0)
                             o.Disp()
+                            count = count + 1
+                            print(count)
         </py-script>
         <!-- if __name__ == "__main__":
                 n_indivisuals = 150
