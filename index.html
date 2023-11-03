@@ -325,10 +325,6 @@
                         self.UpdateVectors()
                     return self.g_best_score,self.g_best_vector
 
-            class Button:      
-                flag = False
-                o = Osero()
-                color = 0
             def clicked():
                     radios = js.document.getElementsByName("test1")
                     for radio in radios:
@@ -337,23 +333,7 @@
                             select_x = int(radio.value)%8
                             Element("text").write("[ "+str(select_y)+" , "+str(select_x)+" ]")
                             o = Osero()
-                            arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
-
-                            ## 二連続でどっちも置く場所がなければ終わり
-                            if len(arr) == 0:
-                                if flag:
-                                    break
-                                color = (color + 1)%2
-                                flag = True
-                                continue
-                            else:
-                                flag = False
-                                for (yy,xx) in arr:
-                                    if select_y == yy and select_x == xx :
-                                        o.Put(select_y,select_x,color)
-                            color = (color + 1)%2
                             o.Disp()
-                            return o.Result()
         </py-script>
         <!-- if __name__ == "__main__":
                 n_indivisuals = 150
