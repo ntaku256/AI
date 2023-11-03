@@ -77,8 +77,8 @@
                 radios = js.document.getElementsByName("test1")
                 for radio in radios:
                     if radio.checked:
-                        x = int(radio.value)//8
-                        y = int(radio.value)%8
+                        y = int(radio.value)//8
+                        x = int(radio.value)%8
                         Element("text").write("[ "+str(y)+" , "+str(x)+" ]")
         </py-script>
         <py-script class="Osero">
