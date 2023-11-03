@@ -107,7 +107,7 @@
                     s = ""
                     s += "--"
                     for i in range(self.Width):
-                        s += "|-"+str(i)+"-"
+                        s += "| "+str(i)+" "
                     s += "<br>"
                     for i in range(self.Height):
                         s += str(i) + " "
@@ -231,16 +231,27 @@
                     [  1.82883348 ,-3.98875031 , 3.50467481  ,5.20606844, -0.58939011, -6.0727421,  2.78332894, -4.35495494],
                     [ -8.55768735,-5.81515668, 3.06846976 , -4.45747499 , -2.30405207 ,-4.10293077 ,-4.88844761 , 5.65605183],
                     [  0.51941962, -1.71454956 ,-6.73718104, -6.2447815  , 3.09940919 ,5.71136616 ,-4.03695552 ,-1.24283584]]
+                    
                     arr,values = self.GetPossiblePutPositionAndValue(self.color,stoneMap)
-                    if not self.CanPut(selected_y, selected_x, self.color):
-                        print("置やんぞ!!")
+                    ## 二連続でどっちも置く場所がなければ終わり
+                    if len(arr) == 0:
+                        if flag:
+                            loopon = False
+                        if loopon == True:
+                            color = (color + 1)%2
+                            flag = True
                     else:
-                        self.Put(selected_y,selected_x,self.color)
-                        self.color = (self.color + 1)%2
-                        if self.color == 0:
-                            print("●の番です")
+                        flag = False
+                    if loopon == True:
+                        if not self.CanPut(selected_y, selected_x, self.color):
+                            print("置やんぞ!!")
                         else:
-                            print("○の番です")
+                            self.Put(selected_y,selected_x,self.color)
+                            self.color = (self.color + 1)%2
+                            if self.color == 0:
+                                print("●の番です")
+                            else:
+                                print("○の番です")
                     self.Disp()
                     
                         
