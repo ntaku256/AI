@@ -218,6 +218,7 @@
                 def playosero(self,selectvalue):
                     selected_y = int(selectvalue)//8
                     selected_x = int(selectvalue)%8
+                    Element("text").write("[ "+str(selected_y)+" , "+str(selected_x)+" ]")
                         
 
             def PlayOsero(stoneMap1,stoneMap2):
@@ -340,7 +341,6 @@
                     if radio.checked:
                         select_y = int(radio.value)//8
                         select_x = int(radio.value)%8
-                        Element("text").write("[ "+str(select_y)+" , "+str(select_x)+" ]")
                         o = Osero()
                         o.playosero(radio.value)
         </py-script>
