@@ -82,10 +82,6 @@
             import matplotlib.animation as anime
             from sklearn.cluster import KMeans
             import random
-
-            def main():
-                PlayOsero()
-                print("OK")
             
             def Evaluate(stoneMap1,stoneMap2):
                 n_white,n_black,n_sum = PlayOsero(stoneMap1,stoneMap2)
@@ -332,9 +328,7 @@
                         print("white:",n_white,"black:",n_black,"total:",n_sum) 
                     self.Disp()
 
-                main()
                 
-
             def PlayOsero(stoneMap1,stoneMap2):
                 o = Osero()
                 flag = False
