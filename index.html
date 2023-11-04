@@ -332,32 +332,32 @@
                         print("white:",n_white,"black:",n_black,"total:",n_sum) 
                     self.Disp()
 
-                def PlayOsero(stoneMap1,stoneMap2):
-                    o = Osero()
-                    flag = False
-                    color = 0
-                    while(True):
-                        stoneMap = None
-                        if color == 0:
-                            stoneMap = stoneMap1
-                        else:
-                            stoneMap = stoneMap2
-                        arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
+            def PlayOsero(stoneMap1,stoneMap2):
+                o = Osero()
+                flag = False
+                color = 0
+                while(True):
+                    stoneMap = None
+                    if color == 0:
+                        stoneMap = stoneMap1
+                    else:
+                        stoneMap = stoneMap2
+                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
 
-                        ## 二連続でどっちも置く場所がなければ終わり
-                        if len(arr) == 0:
-                            if flag:
-                                break
-                            color = (color + 1)%2
-                            flag = True
-                            continue
-                        else:
-                            flag = False
-                        best_hand_arg = np.argmax(values)
-                        best_hand = arr[best_hand_arg]
-                        o.Put(best_hand[0],best_hand[1],color)
+                    ## 二連続でどっちも置く場所がなければ終わり
+                    if len(arr) == 0:
+                        if flag:
+                            break
                         color = (color + 1)%2
-                    return o.Result()
+                        flag = True
+                        continue
+                    else:
+                        flag = False
+                    best_hand_arg = np.argmax(values)
+                    best_hand = arr[best_hand_arg]
+                    o.Put(best_hand[0],best_hand[1],color)
+                    color = (color + 1)%2
+                return o.Result()
 
                         
             o = Osero() 
