@@ -83,7 +83,9 @@
             from sklearn.cluster import KMeans
             import random
 
-
+　　　　　　　　def main():
+                PlayOsero()
+            
             def Evaluate(stoneMap1,stoneMap2):
                 n_white,n_black,n_sum = PlayOsero(stoneMap1,stoneMap2)
                 return n_white + 8*8 - n_sum
@@ -183,6 +185,7 @@
                 c1 = 0.7
                 c2 = 0.7
                 w = 0.9
+                main()
                 pso = PSO(n_iters,n_indivisuals,w,c1,c2)
                 _,pso_res = pso.Run()
                 stonemap = pso_res.reshape((8,8))
