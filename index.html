@@ -93,6 +93,16 @@
                 color = 0
                 loopon = True
 
+                n_indivisuals = 150
+                n_iters = 10
+                n_clusters = 10
+                c1 = 0.7
+                c2 = 0.7
+                w = 0.9
+                pso = PSO(n_iters,n_indivisuals,w,c1,c2)
+                _,pso_res = pso.Run()
+                stonemap = pso_res.reshape((8,8))
+
                 #white:0, black:1, empty:-1
                 Field = None
 
@@ -277,7 +287,7 @@
                 g_best_vector = None
                 p_best_scores = None
                 p_best_vectors = None
-            
+
                 def __init__(self,n_iter,n_swarm,w,c1,c2):
                     self.n_iter = n_iter
                     self.n_swarm = n_swarm
