@@ -357,6 +357,7 @@
             w = 0.9
             pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
             _,pso_res = pso.Run()
+            stonemap = pso_res.reshape((8,8))
             o = Osero() 
             
             print("○の番です")
