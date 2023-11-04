@@ -201,7 +201,39 @@
                                 n_black += 1
                     return n_white,n_black,n_sum
 
-                def playosero(self,selectvalue):
+                def playpso(stonemap):
+                    stoneMap = None
+                    if self.color == 0:
+                        stoneMap = stonemap
+                    else:
+                        stoneMap = stonemap
+                    arr,values = self.GetPossiblePutPositionAndValue(color,stonemap)
+
+                    ## 二連続でどっちも置く場所がなければ終わり
+                    if len(arr) == 0:
+                        if self.flag:
+                            self.loopon = False
+                        if self.loopon == True:
+                            self.color = (self.color + 1)%2
+                            self.flag = True
+                    else:
+                        self.flag = False
+                    if self.loopon == True:
+                        best_hand_arg = np.argmax(values)
+                        best_hand = arr[best_hand_arg]
+                        self.Put(best_hand[0],best_hand[1],color)
+                        self.color = (self.color + 1)%2
+                        if self.color == 0:
+                                print("○の番です")
+                            else:
+                                print("●の番です")
+                    else:
+                        n_white,n_black,n_sum = self.Result()
+                        print("white:",n_white,"black:",n_black,"total:",n_sum) 
+                    self.Disp()
+
+                        
+                def playosero(self,selectvalue,stonemap):
                     selected_y = int(selectvalue)//8
                     selected_x = int(selectvalue)%8
                     Element("text").write("[ "+str(selected_y)+" , "+str(selected_x)+" ]")
@@ -230,10 +262,11 @@
                         else:
                             self.Put(selected_y,selected_x,self.color)
                             self.color = (self.color + 1)%2
-                            if self.color == 0:
+                            if my self.color == 0:
                                 print("○の番です")
                             else:
                                 print("●の番です")
+                        playpso(stonemap)
                     else:
                         n_white,n_black,n_sum = self.Result()
                         print("white:",n_white,"black:",n_black,"total:",n_sum) 
@@ -359,14 +392,14 @@
             _,pso_res = pso.Run()
             stonemap = pso_res.reshape((8,8))
             o = Osero() 
-            
             print("○の番です")
+                        
             o.Disp()
             def clicked():
                 radios = js.document.getElementsByName("test1")
                 for radio in radios:
                     if radio.checked:
-                        o.playosero(radio.value)
+                        o.playosero(radio.value,stonemap)
         </py-script>
     </body>
 </html>
