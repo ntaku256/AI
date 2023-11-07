@@ -13,15 +13,11 @@
             packages = ["matplotlib", "pandas", "numpy","scikit-learn"]
         </py-config>
         <style>      
-            .button{
-                margin-left: 20px;
-                margin-top:20px ;
-                transform:scale(2);
-            }
             .button-select{
                 margin-top: 20px;
-                height: 40px;
-                width: 100px;
+                margin-right: 20px;
+                height: 50px;
+                width: 120px;
             }
             .flex{
                 background: none;
@@ -40,7 +36,9 @@
         <div class="flex">
             <div>
                 <table id="board" style='border: 1px solid black'></table>
-                <button class="button-select" py-click="Reset()" id="button">Reset</button>
+                <button class="button-select" py-click="Reset()" id="button">GameReset</button>
+                <button class="button-select" py-click="InstaReset()" id="button">InstaReset</button>
+                <button class="button-select" py-click="PSOReset()" id="button">PSOReset</button>
             </div>
         <py-script>
         </py-script>
@@ -64,12 +62,8 @@
                     img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/black.png'
                     img.style.visibility = 'visible'
                 if color == 'empty':
-                    img.src = ' '
-                    img.alt = ' '
                     img.style.visibility = 'hidden'
                 
-                
-
             class Osero:
                 Width = 8
                 Height = 8
@@ -80,13 +74,6 @@
                 #white:0, black:1, empty:-1
                 Field = None
 
-                def __init__(self):
-                    self.Field = [[-1 for i in range(self.Width)] for i in range(self.Height)]
-                    self.Field[3][3] = 0
-                    self.Field[3][4] = 1
-                    self.Field[4][3] = 1
-                    self.Field[4][4] = 0
-                
                 def ResetField(self):
                     self.Field = [[-1 for i in range(self.Width)] for i in range(self.Height)]
                     self.Field[3][3] = 0
@@ -96,8 +83,10 @@
                     self.flag = False
                     self.color = 0
                     self.loopon = True
-                    
 
+                def __init__(self):
+                    self.ResetField()
+                
                 def Disp(self):
                     for i in range(self.Height):
                         for j in range(self.Width):
@@ -108,7 +97,6 @@
                             if self.Field[i][j] == -1:
                                 do_flip(i, j, 'empty')
                                 
-
                 def Put(self,y,x,color):
                     dxArr = [0,1,1,1,0,-1,-1,-1]
                     dyArr = [1,1,0,-1,-1,-1,0,1]
@@ -185,15 +173,11 @@
                             if self.Field[y][x] == 1:
                                 n_black += 1
                     return n_white,n_black,n_sum
-                    
-                
-                def PlayPSO(self,stoneMapPSO):
-                    arr,values = self.GetPossiblePutPositionAndValue(self.color,stoneMapPSO)
+                         
+                def PlayPSO(self,stonemapAI):
+                    arr,values = self.GetPossiblePutPositionAndValue(self.color,stonemapAI)
                     ## 二連続でどっちも置く場所がなければ終わり
                     if len(arr) == 0:
-                        arrE,valuesE = self.GetPossiblePutPositionAndValue((self.color + 1)%2,stoneMapPSO)
-                        if len(arrE) == 0:
-                            self.loopon == False
                         if self.flag:
                             self.loopon = False
                         if self.loopon == True:
@@ -215,7 +199,7 @@
                         print("white:",n_white,"black:",n_black,"total:",n_sum) 
                     self.Disp()
 
-                def playosero(self,x,y,stonemapPSO):
+                def playosero(self,x,y,stonemapAI):
                     stoneMap = [[  4.64442892,-5.94676174  ,-8.22406289,-3.54108864,14.449 ,-12.25701246, -4.85005069, -3.0631509 ],
                     [  2.44601732 , 7.28178502,  3.87052249, -6.61112403 , 2.88436812, 2.28200454 , 2.88739893 , 6.69401217],
                     [ -9.63874628 , 1.33511466 , 3.94920367 , 4.25621057 , 8.48590166, -18.34996554,  4.75598223 , -5.86846399],
@@ -246,7 +230,7 @@
                         print("●の番です")
                     else:
                         print("○の番です")
-                        self.PlayPSO(stonemapPSO)
+                        self.PlayPSO(stonemapAI)
                     if self.loopon == False:
                         n_white,n_black,n_sum = self.Result()
                         print("white:",n_white,"black:",n_black,"total:",n_sum) 
@@ -278,8 +262,6 @@
                     o.Put(best_hand[0],best_hand[1],color)
                     color = (color + 1)%2
                 return o.Result()
-
-
 
             def Evaluate(stoneMap1,stoneMap2):
                 n_white,n_black,n_sum = PlayOsero(stoneMap1,stoneMap2)
@@ -363,11 +345,140 @@
                         self.UpdateVectors()
                     return self.g_best_score,self.g_best_vector
 
+            class InstaGramFlies:
+                n_iters = None
+                n_clusters = None
+                n_flies = None
+                
+                centers = None
+                # best fly in in each cluster
+                best_fly_indices = None
+                cluster_like_average = None
+                center_dist_average = None
+                center_speeds = None
+            
+                likes = None
+                labels = None
+                # np.array([[pioneer rate, faddist rate, master rate],[...],...])
+                strategies = None
+                vectors = None  # np.array([x1,x2,x3,...]) x1: np.array
+            
+                def __init__(self, n_iters, n_clusters, n_flies):
+                    self.n_iters = n_iters
+                    self.n_clusters = n_clusters
+                    self.n_flies = n_flies
+                    self.InitFlies()
+                    self.EvaluateLikes()
+            
+                def InitFlies(self):
+                    self.vectors = np.array([InitIndivisual() for _ in range(self.n_flies)])
+                    self.strategies = np.zeros([self.n_flies, 3])
+                    for i in range(self.n_flies):
+                        randoms = np.random.uniform(1, 100, 3)
+                        for j in range(3):
+                            self.strategies[i][j] = randoms[j]/sum(randoms)
+                    self.likes = np.zeros(self.n_flies)
+                    self.best_fly_indices = np.zeros(self.n_clusters)
+            
+                def Run(self):
+                    fig = plt.figure()
+                    imgs = []
+                    for i in range(self.n_iters):
+                        self.EvaluateLikes()
+                        """
+                        scatter_center = plt.scatter(self.centers.T[0], self.centers.T[1], marker="*",c="red")
+                        scatter_vector = plt.scatter(self.vectors.T[0], self.vectors.T[1], marker=".",c="blue")
+                        imgs.append([scatter_center,scatter_vector])
+                        """
+                        self.Clustering()
+                        self.UpdateFlieVector()
+                    """
+                    plt.xlim(0,100)
+                    plt.ylim(0,100)
+                    plt.grid(True)
+                    ani = anime.ArtistAnimation(fig, imgs,interval=500)
+                    ani.save("sample.gif",writer="imagemagick")
+                    plt.show()
+                    """
+                    self.EvaluateLikes()
+                    best_arg = np.argmax(self.likes)
+                    return self.likes[best_arg],self.vectors[best_arg]
+            
+                def EvaluateLikes(self):
+                    enemy = np.random.randint(0,self.n_flies,1)
+                    for i in range(self.n_flies):
+                        self.likes[i] = EvalIndivisual(self.vectors[i],self.vectors[enemy])
+            
+                def Clustering(self):
+                    if self.centers is None:
+                        model = KMeans(n_clusters=self.n_clusters)
+                        result = model.fit(self.vectors)
+                        self.centers = result.cluster_centers_
+                    else:
+                        model = KMeans(n_init=1,n_clusters=self.n_clusters,init=self.centers)
+                        result = model.fit(self.vectors)
+                    self.labels = result.labels_
+                    self.center_speeds = result.cluster_centers_ - self.centers
+                    self.centers = result.cluster_centers_
+            
+                    # best flies in each cluster
+                    best = np.zeros(self.n_clusters)
+                    self.cluster_like_average = np.zeros(self.n_clusters)
+                    for i in range(self.n_flies):
+                        label = self.labels[i]
+                        if (self.likes[i] > best[label]):
+                            best[label] = self.likes[i]
+                            self.best_fly_indices[label] = i
+            
+                    # like average in each cluster
+                    for i in range(self.n_clusters):
+                        self.cluster_like_average[i] = np.mean(
+                                [self.likes[j] for j in range(self.n_flies) if self.labels[j] == i])
+            
+                    # average dist between each cluster
+                    self.center_dist_average = np.zeros_like(self.vectors[0])
+                    for i in range(self.n_clusters):
+                        for j in range(i+1,self.n_clusters):
+                            self.center_dist_average += (self.centers[i]-self.centers[j])
+                    self.center_dist_average /= sum(range(1,self.n_clusters))
+            
+                def UpdateFlieVector(self):
+                    for i in range(self.n_flies):
+                        action = roulett(self.strategies[i])
+                        # pioneer
+                        if action == 0:
+                            self.vectors[i] = self.UpdatePioneer(self.vectors[i])
+                        # faddist
+                        if action == 1:
+                            self.vectors[i] = self.UpdateFaddist(self.vectors[i])
+                        # master
+                        if action == 2:
+                            self.vectors[i] = self.UpdateMaster(self.vectors[i], self.labels[i])
+                        filtIndivisual(self.vectors[i])
+            
+                def UpdatePioneer(self, vector):
+                    length = Pareto(1,6,self.center_dist_average.shape)
+                    rand01 = np.random.choice([-1,1],length.shape)
+                    return vector + self.center_dist_average*length*rand01
+            
+                def UpdateFaddist(self, vector):
+                    cluster = roulett(self.cluster_like_average)
+                    return self.UpdateMaster(vector,cluster)
+            
+                def UpdateMaster(self, vector, label):
+                    index_table = [i for i in range(self.n_flies) if(self.labels[i]==label)]
+                    table = [self.likes[i] for i in index_table]
+                    target_fly_index = index_table[roulett(table)]
+                    center = self.centers[label]
+                    center_vector = (center - vector)*np.random.uniform(0,1)
+                    target_vector = (self.vectors[target_fly_index] - vector)*np.random.uniform(0,1)
+                    center_speed_vector = self.center_speeds[label]*np.random.uniform(0,1)
+                    return vector+center_vector+target_vector+center_speed_vector
+
             def on_click(e):
                 x, y = [int(i) for i in e.target.id.split('_')]
                 print("[ "+str(x)+" , "+str(y)+" ]")
-                o.playosero(x,y,stonemapPSO)
-
+                o.playosero(x,y,stonemapAI)
 
             board = js.document.getElementById('board')
             for i in range(8):
@@ -376,7 +487,7 @@
                     td = js.document.createElement('td')
                     td.style.background = 'green'
                     td.style.border = '1px solid black'
-                    td.width = td.height = 70
+                    td.width = td.height = 75
                     td.align = 'center'
                     td.id = '%d_%d' % (i, j)
                     td.color = 'empty'
@@ -389,14 +500,15 @@
                 board.appendChild(tr)
         
             n_indivisuals = 150
-            n_iters = 10
+            n_iters = 15
             n_clusters = 10
             c1 = 0.7
             c2 = 0.7
             w = 0.9
             pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
             _,pso_res = pso.Run()
-            stonemapPSO = pso_res.reshape((8,8))
+            stonemapAI = pso_res.reshape((8,8))
+            print(stonemapAI)
             o = Osero() 
             print("●の番です")
             o.Disp()
@@ -404,8 +516,28 @@
             def Reset():
                 o.ResetField()
                 print("●の番です")
-                o.Disp()  
-        
+                o.Disp()     
+
+            def InstaReset():
+                n_iters = 30
+                instaFlies = InstaGramFlies(n_iters, n_clusters, n_indivisuals)
+                _, if_res = instaFlies.Run()
+                stonemapAI = if_res.reshape((8,8))
+                print(stonemapAI)
+
+            def PSOReset():
+                n_iters = 30
+                pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
+                _,pso_res = pso.Run()
+                stonemapAI = pso_res.reshape((8,8))
+                print(stonemapAI)
         </py-script>
+            <!-- pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
+            _,pso_res = pso.Run()
+            stonemapAI = pso_res.reshape((8,8))
+
+            instaFlies = InstaGramFlies(n_iters, n_clusters, n_indivisuals)
+            _, if_res = instaFlies.Run()
+            stonemapAI = if_res.reshape((8,8)) -->
     </body>
 </html>
