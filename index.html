@@ -93,9 +93,10 @@
                     self.Field[3][4] = 1
                     self.Field[4][3] = 1
                     self.Field[4][4] = 0
-                    flag = False
-                    color = 0
-                    loopon = True
+                    self.flag = False
+                    self.color = 0
+                    self.loopon = True
+                    
 
                 def Disp(self):
                     for i in range(self.Height):
@@ -190,6 +191,9 @@
                     arr,values = self.GetPossiblePutPositionAndValue(self.color,stoneMapPSO)
                     ## 二連続でどっちも置く場所がなければ終わり
                     if len(arr) == 0:
+                        arrE,valuesE = self.GetPossiblePutPositionAndValue((self.color + 1)%2,stoneMapPSO)
+                        if len(arrE) == 0:
+                            self.loopon == False
                         if self.flag:
                             self.loopon = False
                         if self.loopon == True:
@@ -372,7 +376,7 @@
                     td = js.document.createElement('td')
                     td.style.background = 'green'
                     td.style.border = '1px solid black'
-                    td.width = td.height = 80
+                    td.width = td.height = 70
                     td.align = 'center'
                     td.id = '%d_%d' % (i, j)
                     td.color = 'empty'
