@@ -230,7 +230,6 @@
                         print("●の番です")
                     else:
                         print("○の番です")
-                        self.PlayPSO(stonemapAI)
                     if self.loopon == False:
                         n_white,n_black,n_sum = self.Result()
                         print("white:",n_white,"black:",n_black,"total:",n_sum) 
@@ -505,9 +504,7 @@
             c1 = 0.7
             c2 = 0.7
             w = 0.9
-            pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
-            _,pso_res = pso.Run()
-            stonemapAI = pso_res.reshape((8,8))
+            stonemapAI = None
             print(stonemapAI)
             o = Osero() 
             print("●の番です")
