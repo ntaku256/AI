@@ -18,6 +18,10 @@
 
 # しくみ
 - 速度と位置の更新式のみで構造
+1. 初期化
+2. 位置更新
+3. 速度更新
+4. 最適値の更新、終了判定
 ![](https://github.com/ntaku256/AI/blob/main/Source/PSO.png)
 https://qiita.com/opticont/items/04a5b4ff41483966987f
 
