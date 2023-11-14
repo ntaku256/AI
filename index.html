@@ -178,6 +178,9 @@
                     arr,values = self.GetPossiblePutPositionAndValue(self.color,stonemapAI)
                     ## 二連続でどっちも置く場所がなければ終わり
                     if len(arr) == 0:
+                        arrEnemy,valuesEnemy = self.GetPossiblePutPositionAndValue((self.color+1)%2,stoneMap)
+                        if len(arrEnemy) == 0:
+                            self.loopon = False
                         if self.flag:
                             self.loopon = False
                         if self.loopon == True:
@@ -213,6 +216,8 @@
                     ## 二連続でどっちも置く場所がなければ終わり
                     if len(arr) == 0:
                         arrEnemy,valuesEnemy = self.GetPossiblePutPositionAndValue((self.color+1)%2,stoneMap)
+                        if len(arrEnemy) == 0:
+                            self.loopon = False
                         if self.flag:
                             self.loopon = False
                         if self.loopon == True:
