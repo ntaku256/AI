@@ -25,4 +25,549 @@
 ![](https://github.com/ntaku256/AI/blob/main/Source/PSO.png)
 https://qiita.com/opticont/items/04a5b4ff41483966987f
 
+# プログラム
+```python
+<!DOCTYPE html>
 
+<html lang="ja">
+    <head>
+        <meta charset="utf-8"/>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <link rel="stylesheet" href="https://pyscript.net/latest/pyscript.css" />
+        <script defer src="https://pyscript.net/latest/pyscript.js"></script>
+
+        <!-- Pythonのライブラリをインストールします -->
+        <py-config>
+            packages = ["matplotlib", "pandas", "numpy","scikit-learn"]
+        </py-config>
+        <style>      
+            .button-select{
+                margin-top: 20px;
+                margin-right: 20px;
+                height: 50px;
+                width: 120px;
+            }
+            .flex{
+                background: none;
+                display: flex;
+                justify-content:flex-start ;
+            }
+            .radio{
+                margin-top: 5px;
+            }
+            .osero_board{
+                font-size: 25px;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="flex">
+            <div>
+                <table id="board" style='border: 1px solid black'></table>
+                <button class="button-select" py-click="Reset()" id="button">GameReset</button>
+                <button class="button-select" py-click="InstaReset()" id="button">InstaReset</button>
+                <button class="button-select" py-click="PSOReset()" id="button">PSOReset</button>
+            </div>
+        <py-script>
+        </py-script>
+        <py-script>
+            import numpy as np
+            import matplotlib.pyplot as plt
+            import matplotlib.animation as anime
+            from sklearn.cluster import KMeans
+            import random
+            import pyodide
+            from js import console, document
+            from pyodide.ffi.wrappers import add_event_listener
+
+            def do_flip(x, y, color):
+                js.document.getElementById('%d_%d' % (x, y)).color = color
+                img = js.document.getElementById('img%d_%d' % (x, y))
+                if color == 'white':
+                    img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/white.png'
+                    img.style.visibility = 'visible'
+                if color == 'black':
+                    img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/black.png'
+                    img.style.visibility = 'visible'
+                if color == 'empty':
+                    img.style.visibility = 'hidden'
+                
+            class Osero:
+                Width = 8
+                Height = 8
+                flag = False
+                color = 0
+                loopon = True
+
+                #white:0, black:1, empty:-1
+                Field = None
+
+                def ResetField(self):
+                    self.Field = [[-1 for i in range(self.Width)] for i in range(self.Height)]
+                    self.Field[3][3] = 0
+                    self.Field[3][4] = 1
+                    self.Field[4][3] = 1
+                    self.Field[4][4] = 0
+                    self.flag = False
+                    self.color = 0
+                    self.loopon = True
+
+                def __init__(self):
+                    self.ResetField()
+                
+                def Disp(self):
+                    for i in range(self.Height):
+                        for j in range(self.Width):
+                            if self.Field[i][j] == 0:
+                                do_flip(i, j, 'white')
+                            if self.Field[i][j] == 1:
+                                do_flip(i, j, 'black')
+                            if self.Field[i][j] == -1:
+                                do_flip(i, j, 'empty')
+                                
+                def Put(self,y,x,color):
+                    dxArr = [0,1,1,1,0,-1,-1,-1]
+                    dyArr = [1,1,0,-1,-1,-1,0,1]
+                    for dx,dy in zip(dxArr,dyArr):
+                        if(l := self.CheckDepth(color,y,x,dy,dx),l!=-1):
+                            xx = x
+                            yy = y
+                            for i in range(l+1):
+                                self.Field[yy][xx] = color
+                                xx += dx
+                                yy += dy
+
+                def CheckDepth(self,color,y,x,dy,dx):
+                    depth = 0
+                    while(True):
+                        y += dy
+                        x += dx
+                        if(self.IsInside(y,x)==False or self.Field[y][x] == -1):
+                            return -1
+                        if(self.Field[y][x] == color):
+                            return depth
+                        depth += 1
+
+                def IsInside(self,y,x):
+                    return x >= 0 and x < self.Width and y >= 0 and y < self.Height
+
+                def CanPut(self,y,x,color):
+                    if not self.IsInside(y, x) or self.Field[y][x] != -1:
+                        return False
+                    flag = False
+                    dxArr = [0,1,1,1,0,-1,-1,-1]
+                    dyArr = [1,1,0,-1,-1,-1,0,1]
+                    for dx,dy in zip(dxArr,dyArr):
+                        if(self.CheckDepth(color,y,x,dy,dx) > 0):
+                            return True
+
+                def GetPossiblePutPositionAndValue(self,color,stoneMap):
+                    positions = []
+                    values = []
+                    for y in range(self.Height):
+                        for x in range(self.Width):
+                            if self.CanPut(y,x,color):
+                                positions.append([y,x])
+                                values.append(self.CalcStoneValue(y,x,color,stoneMap))
+                    return positions,values
+
+                # stoneMap: array(width * height)
+                def CalcStoneValue(self,y,x,color,stoneMap):
+                    dxArr = [0,1,1,1,0,-1,-1,-1]
+                    dyArr = [1,1,0,-1,-1,-1,0,1]
+                    value = stoneMap[y][x]
+                    for dx,dy in zip(dxArr,dyArr):
+                        if(l := self.CheckDepth(color,y,x,dy,dx),l!=-1):
+                            xx = x+dx
+                            yy = y+dy
+                            for _ in range(l):
+                                if self.Field[yy][xx] != color:
+                                    value += stoneMap[yy][xx]
+                                xx += dx
+                                yy += dy
+                    return value
+                
+                def Result(self):
+                    n_white = 0
+                    n_black = 0
+                    n_sum = 0
+                    for y in range(self.Height):
+                        for x in range(self.Width):
+                            if self.Field[y][x] == -1:
+                                continue
+                            n_sum += 1
+                            if self.Field[y][x] == 0:
+                                n_white += 1
+                            if self.Field[y][x] == 1:
+                                n_black += 1
+                    return n_white,n_black,n_sum
+                         
+                def PlayPSO(self,stonemapAI):
+                    arr,values = self.GetPossiblePutPositionAndValue(self.color,stonemapAI)
+                    ## 二連続でどっちも置く場所がなければ終わり
+                    if len(arr) == 0:
+                        if self.flag:
+                            self.loopon = False
+                        if self.loopon == True:
+                            self.color = (self.color + 1)%2
+                            self.flag = True
+                    else:
+                        self.flag = False
+                        if self.loopon == True:
+                            best_hand_arg = np.argmax(values)
+                            best_hand = arr[best_hand_arg]
+                            self.Put(best_hand[0],best_hand[1],self.color)
+                            self.color = (self.color + 1)%2
+                    if self.color == 0:
+                        print("●の番です")
+                    else:
+                        print("○の番です")
+                    if self.loopon == False:
+                        n_white,n_black,n_sum = self.Result()
+                        print("white:",n_white,"black:",n_black,"total:",n_sum) 
+                    self.Disp()
+
+                def playosero(self,x,y,stonemapAI):
+                    stoneMap = [[  4.64442892,-5.94676174  ,-8.22406289,-3.54108864,14.449 ,-12.25701246, -4.85005069, -3.0631509 ],
+                    [  2.44601732 , 7.28178502,  3.87052249, -6.61112403 , 2.88436812, 2.28200454 , 2.88739893 , 6.69401217],
+                    [ -9.63874628 , 1.33511466 , 3.94920367 , 4.25621057 , 8.48590166, -18.34996554,  4.75598223 , -5.86846399],
+                    [-21.5525791 ,-10.40855294,  9.65304426 ,-6.7865024  , 3.43632992,1.78858655,  8.07561675, 3.20647401],
+                    [  3.35587021 ,-5.91740211, -3.10004183, 16.31703601, -2.99102139,4.97680409,  4.27546672, -2.95882175],
+                    [  1.82883348 ,-3.98875031 , 3.50467481  ,5.20606844, -0.58939011, -6.0727421,  2.78332894, -4.35495494],
+                    [ -8.55768735,-5.81515668, 3.06846976 , -4.45747499 , -2.30405207 ,-4.10293077 ,-4.88844761 , 5.65605183],
+                    [  0.51941962, -1.71454956 ,-6.73718104, -6.2447815  , 3.09940919 ,5.71136616 ,-4.03695552 ,-1.24283584]]
+                    
+                    arr,values = self.GetPossiblePutPositionAndValue(self.color,stoneMap)
+                    ## 二連続でどっちも置く場所がなければ終わり
+                    if len(arr) == 0:
+                        if self.flag:
+                            self.loopon = False
+                        if self.loopon == True:
+                            self.color = (self.color + 1)%2
+                            self.flag = True
+                    else:
+                        self.flag = False
+                    if self.loopon == True:
+                        if not self.CanPut(x, y, self.color):
+                            print("置やんぞ!!")
+                            self.flag = True
+                        else:
+                            self.Put(x, y, self.color)
+                            self.color = (self.color + 1)%2
+                    if self.color == 0:
+                        print("●の番です")
+                    else:
+                        print("○の番です")
+                        self.PlayPSO(stonemapAI)
+                    if self.loopon == False:
+                        n_white,n_black,n_sum = self.Result()
+                        print("white:",n_white,"black:",n_black,"total:",n_sum) 
+                    self.Disp()
+
+            def PlayOsero(stoneMap1,stoneMap2):
+                o = Osero()
+                flag = False
+                color = 0
+                while(True):
+                    stoneMap = None
+                    if color == 0:
+                        stoneMap = stoneMap1
+                    else:
+                        stoneMap = stoneMap2
+                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
+
+                    ## 二連続でどっちも置く場所がなければ終わり
+                    if len(arr) == 0:
+                        if flag:
+                            break
+                        color = (color + 1)%2
+                        flag = True
+                        continue
+                    else:
+                        flag = False
+                    best_hand_arg = np.argmax(values)
+                    best_hand = arr[best_hand_arg]
+                    o.Put(best_hand[0],best_hand[1],color)
+                    color = (color + 1)%2
+                return o.Result()
+
+            def Evaluate(stoneMap1,stoneMap2):
+                n_white,n_black,n_sum = PlayOsero(stoneMap1,stoneMap2)
+                return n_white + 8*8 - n_sum
+
+            def Pareto(mode,a,shape):
+                return (np.random.pareto(a,size=shape)+1)*mode
+            
+            def roulett(table):
+                total = np.sum(table)
+                rand = np.random.uniform(0.0,total)
+                sum = 0
+                for i in range(len(table)):
+                    sum += table[i]
+                    if(sum > rand):
+                        return i
+            
+            def filtIndivisual(vector):
+                for i in range(8*8):
+                    vector[i] = max(-30,min(30,vector[i]))
+            
+            def InitIndivisual():
+                return np.random.uniform(-30,30,(8*8))
+            
+            def EvalIndivisual(vector1,vector2):
+                return Evaluate(vector1.reshape((8,8)),vector2.reshape((8,8)))
+                    
+            class PSO:
+                n_iter = None
+                n_swarm = None
+                w = None
+                c1 = None
+                c2 = None
+                vectors = None
+                scores = None
+                g_best_score = None
+                g_best_vector = None
+                p_best_scores = None
+                p_best_vectors = None
+
+                def __init__(self,n_iter,n_swarm,w,c1,c2):
+                    self.n_iter = n_iter
+                    self.n_swarm = n_swarm
+                    self.w = w
+                    self.c1 = c1
+                    self.c2 = c2
+                    self.InitSwarms()
+                    self.CalcScores()
+            
+                def InitSwarms(self):
+                    self.vectors = np.array([InitIndivisual() for _ in range(self.n_swarm)])
+                    self.speeds = np.zeros_like(self.vectors)
+                    self.p_best_scores = np.zeros(self.n_swarm)
+                    self.p_best_vectors = np.zeros_like(self.vectors)
+                    self.g_best_score = 0
+                    self.g_best_vector= np.zeros_like(self.vectors[0])
+                    self.scores = np.zeros(self.n_swarm)
+                
+                def CalcScores(self):
+                    enemy = np.random.randint(0,self.n_swarm,1)
+                    for i in range(self.n_swarm):
+                        new_score = EvalIndivisual(self.vectors[i],self.vectors[enemy])
+                        if new_score > self.p_best_scores[i]:
+                            self.p_best_scores[i] = new_score
+                            self.p_best_vectors[i] = np.copy(self.vectors[i])
+                        if new_score > self.g_best_score:
+                            self.g_best_score = new_score
+                            self.g_best_vector = np.copy(self.vectors[i])
+                        self.scores[i] = new_score
+            
+                def UpdateVectors(self):
+                    for i in range(self.n_swarm):
+                        r1 = np.random.uniform(0,1,self.vectors[0].shape)
+                        r2 = np.random.uniform(0,1,self.vectors[0].shape)
+                        self.speeds[i] = self.w*self.speeds[i]+r1*(self.p_best_vectors[i]-self.vectors[i])+r2*(self.g_best_vector-self.vectors[i])
+                        self.vectors[i] = self.vectors[i] + self.speeds[i]
+            
+                def Run(self):
+                    for i in range(self.n_iter):
+                        self.CalcScores()
+                        self.UpdateVectors()
+                    return self.g_best_score,self.g_best_vector
+
+            class InstaGramFlies:
+                n_iters = None
+                n_clusters = None
+                n_flies = None
+                
+                centers = None
+                # best fly in in each cluster
+                best_fly_indices = None
+                cluster_like_average = None
+                center_dist_average = None
+                center_speeds = None
+            
+                likes = None
+                labels = None
+                # np.array([[pioneer rate, faddist rate, master rate],[...],...])
+                strategies = None
+                vectors = None  # np.array([x1,x2,x3,...]) x1: np.array
+            
+                def __init__(self, n_iters, n_clusters, n_flies):
+                    self.n_iters = n_iters
+                    self.n_clusters = n_clusters
+                    self.n_flies = n_flies
+                    self.InitFlies()
+                    self.EvaluateLikes()
+            
+                def InitFlies(self):
+                    self.vectors = np.array([InitIndivisual() for _ in range(self.n_flies)])
+                    self.strategies = np.zeros([self.n_flies, 3])
+                    for i in range(self.n_flies):
+                        randoms = np.random.uniform(1, 100, 3)
+                        for j in range(3):
+                            self.strategies[i][j] = randoms[j]/sum(randoms)
+                    self.likes = np.zeros(self.n_flies)
+                    self.best_fly_indices = np.zeros(self.n_clusters)
+            
+                def Run(self):
+                    fig = plt.figure()
+                    imgs = []
+                    for i in range(self.n_iters):
+                        self.EvaluateLikes()
+                        """
+                        scatter_center = plt.scatter(self.centers.T[0], self.centers.T[1], marker="*",c="red")
+                        scatter_vector = plt.scatter(self.vectors.T[0], self.vectors.T[1], marker=".",c="blue")
+                        imgs.append([scatter_center,scatter_vector])
+                        """
+                        self.Clustering()
+                        self.UpdateFlieVector()
+                    """
+                    plt.xlim(0,100)
+                    plt.ylim(0,100)
+                    plt.grid(True)
+                    ani = anime.ArtistAnimation(fig, imgs,interval=500)
+                    ani.save("sample.gif",writer="imagemagick")
+                    plt.show()
+                    """
+                    self.EvaluateLikes()
+                    best_arg = np.argmax(self.likes)
+                    return self.likes[best_arg],self.vectors[best_arg]
+            
+                def EvaluateLikes(self):
+                    enemy = np.random.randint(0,self.n_flies,1)
+                    for i in range(self.n_flies):
+                        self.likes[i] = EvalIndivisual(self.vectors[i],self.vectors[enemy])
+            
+                def Clustering(self):
+                    if self.centers is None:
+                        model = KMeans(n_clusters=self.n_clusters)
+                        result = model.fit(self.vectors)
+                        self.centers = result.cluster_centers_
+                    else:
+                        model = KMeans(n_init=1,n_clusters=self.n_clusters,init=self.centers)
+                        result = model.fit(self.vectors)
+                    self.labels = result.labels_
+                    self.center_speeds = result.cluster_centers_ - self.centers
+                    self.centers = result.cluster_centers_
+            
+                    # best flies in each cluster
+                    best = np.zeros(self.n_clusters)
+                    self.cluster_like_average = np.zeros(self.n_clusters)
+                    for i in range(self.n_flies):
+                        label = self.labels[i]
+                        if (self.likes[i] > best[label]):
+                            best[label] = self.likes[i]
+                            self.best_fly_indices[label] = i
+            
+                    # like average in each cluster
+                    for i in range(self.n_clusters):
+                        self.cluster_like_average[i] = np.mean(
+                                [self.likes[j] for j in range(self.n_flies) if self.labels[j] == i])
+            
+                    # average dist between each cluster
+                    self.center_dist_average = np.zeros_like(self.vectors[0])
+                    for i in range(self.n_clusters):
+                        for j in range(i+1,self.n_clusters):
+                            self.center_dist_average += (self.centers[i]-self.centers[j])
+                    self.center_dist_average /= sum(range(1,self.n_clusters))
+            
+                def UpdateFlieVector(self):
+                    for i in range(self.n_flies):
+                        action = roulett(self.strategies[i])
+                        # pioneer
+                        if action == 0:
+                            self.vectors[i] = self.UpdatePioneer(self.vectors[i])
+                        # faddist
+                        if action == 1:
+                            self.vectors[i] = self.UpdateFaddist(self.vectors[i])
+                        # master
+                        if action == 2:
+                            self.vectors[i] = self.UpdateMaster(self.vectors[i], self.labels[i])
+                        filtIndivisual(self.vectors[i])
+            
+                def UpdatePioneer(self, vector):
+                    length = Pareto(1,6,self.center_dist_average.shape)
+                    rand01 = np.random.choice([-1,1],length.shape)
+                    return vector + self.center_dist_average*length*rand01
+            
+                def UpdateFaddist(self, vector):
+                    cluster = roulett(self.cluster_like_average)
+                    return self.UpdateMaster(vector,cluster)
+            
+                def UpdateMaster(self, vector, label):
+                    index_table = [i for i in range(self.n_flies) if(self.labels[i]==label)]
+                    table = [self.likes[i] for i in index_table]
+                    target_fly_index = index_table[roulett(table)]
+                    center = self.centers[label]
+                    center_vector = (center - vector)*np.random.uniform(0,1)
+                    target_vector = (self.vectors[target_fly_index] - vector)*np.random.uniform(0,1)
+                    center_speed_vector = self.center_speeds[label]*np.random.uniform(0,1)
+                    return vector+center_vector+target_vector+center_speed_vector
+
+            def on_click(e):
+                x, y = [int(i) for i in e.target.id.split('_')]
+                print("[ "+str(x)+" , "+str(y)+" ]")
+                o.playosero(x,y,stonemapAI)
+
+            board = js.document.getElementById('board')
+            for i in range(8):
+                tr = js.document.createElement('tr')
+                for j in range(8):
+                    td = js.document.createElement('td')
+                    td.style.background = 'green'
+                    td.style.border = '1px solid black'
+                    td.width = td.height = 75
+                    td.align = 'center'
+                    td.id = '%d_%d' % (i, j)
+                    td.color = 'empty'
+                    
+                    add_event_listener(td, "click", on_click)
+                    img = js.document.createElement('img')
+                    img.id = 'img%d_%d' % (i, j)
+                    td.appendChild(img)
+                    tr.appendChild(td)
+                board.appendChild(tr)
+        
+            n_indivisuals = 150
+            n_iters = 15
+            n_clusters = 10
+            c1 = 0.7
+            c2 = 0.7
+            w = 0.9
+            pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
+            _,pso_res = pso.Run()
+            stonemapAI = pso_res.reshape((8,8))
+            print(stonemapAI)
+            o = Osero() 
+            print("●の番です")
+            o.Disp()
+
+            def Reset():
+                o.ResetField()
+                print("●の番です")
+                o.Disp()     
+
+            def InstaReset():
+                n_iters = 30
+                instaFlies = InstaGramFlies(n_iters, n_clusters, n_indivisuals)
+                _, if_res = instaFlies.Run()
+                stonemapAI = if_res.reshape((8,8))
+                print(stonemapAI)
+
+            def PSOReset():
+                n_iters = 30
+                pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
+                _,pso_res = pso.Run()
+                stonemapAI = pso_res.reshape((8,8))
+                print(stonemapAI)
+        </py-script>
+            <!-- pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
+            _,pso_res = pso.Run()
+            stonemapAI = pso_res.reshape((8,8))
+
+            instaFlies = InstaGramFlies(n_iters, n_clusters, n_indivisuals)
+            _, if_res = instaFlies.Run()
+            stonemapAI = if_res.reshape((8,8)) -->
+    </body>
+</html>
+```
