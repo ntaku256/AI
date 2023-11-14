@@ -18,7 +18,7 @@
 
 # しくみ
 - 速度と位置の更新式のみで構造
-
+![](https://github.com/ntaku256/AI/blob/main/Source/PSO.png)
 https://qiita.com/opticont/items/04a5b4ff41483966987f
 
 
