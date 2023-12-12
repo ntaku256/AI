@@ -9,5 +9,9 @@
 https://qiita.com/opticont/items/04a5b4ff41483966987f
 
 # オセロAI
+### 価値マップ
+- マップに価値をつけ、おける場所の中からスコアが高い場所を選択する。
+- アルゴリズムでは、この価値マップをオセロで多くの駒をとれるように何度も試行錯誤して値を変えていく。
+<img src="https://github.com/ntaku256/AI/blob/main/Source/StoneMap.png" width="50%">
 
-
+### スコアの計算
