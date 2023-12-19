@@ -35,8 +35,10 @@ https://qiita.com/opticont/items/04a5b4ff41483966987f
 1. それぞれのベクトルに、各マスのvalueが-30~30の価値マップをランダムに生成する。
 ```python
   def InitIndivisual():
+    #8*8のマスそれぞれに-30 ~ 30 の価値を付与する。
     return np.random.uniform(-30,30,(8*8))
 ```
+- 評価マップ
 ```
 [  24.50813671  -29.2878167     9.04794791  -20.67778499    9.04018821   -2.40647408   -8.3115887    27.01061412
    -5.23585605  -10.35255287  -22.7822244    16.51181067  -15.84991705    6.78862383  -21.22315287   -7.65030773
@@ -52,25 +54,54 @@ https://qiita.com/opticont/items/04a5b4ff41483966987f
 4. 結果のスコア(自分の色のマス+空白のマス)と全部のベクトルの中で一番スコアが高かったものとも比較し、それよりも高ければg_bestを更新してそのベクトルをg_best_vectorとして記録する。
 ```python
   def CalcScores(self):
+          #対戦する相手をランダムに決める
           enemy = np.random.randint(0,self.n_swarm,1)
+
+          #決まったベクトルと全部のベクトルをそれぞれ対戦させる
           for i in range(self.n_swarm):
               new_score = EvalIndivisual(self.vectors[i],self.vectors[enemy])
+
+              #自身のベクトルのベストスコアと比較し、大きければ更新、評価マップを保存
               if new_score > self.p_best_scores[i]:
                   self.p_best_scores[i] = new_score
                   self.p_best_vectors[i] = np.copy(self.vectors[i])
+
+              #全ベクトルのベストスコアと比較し、大きければ更新、評価マップを保存
               if new_score > self.g_best_score:
                   self.g_best_score = new_score
                   self.g_best_vector = np.copy(self.vectors[i])
-              self.scores[i] = new_score
+```
+```
+  スコア : (オセロの結果=自分の色があるマス+開いているマス)
+  p_best_score[12] = 40 : 12番目のベクトル内の自己ベストが40 
+  g_best_score = 50 : 全ベクトルの中でベストスコアが50
+```
+- 外部モジュール
+```python
+  # min から max までの整数をランダムに n 回とる
+  np.random.randint(mini,max,n)
+
+  # 型、値など全てを複製
+  np.copy()
+
+  # min から max までの少数をランダムに 8*8=64 回とる
+  np.random.uniform(min,max,(8*8))
 ```
 5. ベクトルの移動速度を求め、ベクトルを移動させる
    - ベクトルの移動速度は、もとの速度・p_best_vectorと現在のベクトルとの距離・g_best_vectorと現在のベクトルとの距離に重みを付けて足し合わせる。
 ```python
   def UpdateVectors(self):
+          #全ベクトルの位置をそれぞれ更新する。
           for i in range(self.n_swarm):
+              #p_best(自己ベストスコア)の重みをランダムにつける。
               r1 = np.random.uniform(0,1,self.vectors[0].shape)
+              #g_best(全ベストスコア)の重みをランダムにつける。
               r2 = np.random.uniform(0,1,self.vectors[0].shape)
+
+              #最適解(p_best,g_best)に近づくようにベクトルの移動速度を計算する。
               self.speeds[i] = self.w*self.speeds[i]+r1*(self.p_best_vectors[i]-self.vectors[i])+r2*(self.g_best_vector-self.vectors[i])
+
+              #ベクトルの位置を更新する。
               self.vectors[i] = self.vectors[i] + self.speeds[i]
 ```
 6. 2~5を繰り返し、最終的にはg_best_vectorの価値マップとそのときのスコアを出力する。(基本使うのは価値マップだけ)
@@ -80,8 +111,11 @@ https://qiita.com/opticont/items/04a5b4ff41483966987f
 
     def Run(self):
         for i in range(self.n_iter):
+            #スコア計算
             self.CalcScores()
+            #ベクトル位置更新
             self.UpdateVectors()
+        #ベストスコアを出力する。
         return self.g_best_score,self.g_best_vector
 ```
 
@@ -91,7 +125,8 @@ https://qiita.com/opticont/items/04a5b4ff41483966987f
   def InitFlies(self):
           #ベクトル(評価マップ)を初期化
           self.vectors = np.array([InitIndivisual() for _ in range(self.n_flies)])
-          #ベクトルの
+
+          #方針決定確率を初期化
           self.strategies = np.zeros([self.n_flies, 3])
           for i in range(self.n_flies):
               randoms = np.random.uniform(1, 100, 3)
@@ -104,7 +139,10 @@ https://qiita.com/opticont/items/04a5b4ff41483966987f
 2. 敵(enemy)としてベクトルをランダムに一つ選び、全てのベクトルと順番にオセロで対戦させる。
 ```python
     def EvaluateLikes(self):
+        #対戦する相手をランダムに決める
         enemy = np.random.randint(0,self.n_flies,1)
+
+        #決まったベクトルと全部のベクトルをそれぞれ対戦させる
         for i in range(self.n_flies):
             self.likes[i] = EvalIndivisual(self.vectors[i],self.vectors[enemy])
         
