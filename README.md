@@ -16,7 +16,7 @@ https://qiita.com/opticont/items/04a5b4ff41483966987f
 <img src="https://github.com/ntaku256/AI/blob/main/Source/StoneMap.png" width="50%">
 
 ### スコアの計算
-- 左の図の例では、右の図のような場所を選択するとvalueが (-3) + (-1) + (-1) = -5 になる。
+- 左の図の例では、右の図のような場所を選択[7][1]するとvalueが (-3) + (-1) + (-1) = -5 になる。
 <img src="https://github.com/ntaku256/AI/blob/main/Source/OseroMap.png" width="100%">
 
 ```
@@ -84,7 +84,7 @@ https://qiita.com/opticont/items/04a5b4ff41483966987f
   # 型、値など全てを複製
   np.copy()
 
-  # min から max までの少数をランダムに 8*8=64 回とる
+  # min から max までの数をランダムに 8*8=64 回とる
   np.random.uniform(min,max,(8*8))
 ```
 5. 点(vector)の移動速度を求め、点(vector)を移動させる
@@ -214,6 +214,12 @@ speeds[2] =
         center_speed_vector = self.center_speeds[label]*np.random.uniform(0,1)
         return vector+center_vector+target_vector+center_speed_vector
 
+```
+- 外部モジュール
+```python
+  #パレート分布
+  a, m = 6., 2.  # 分布の幅と、モードを指定   
+  (np.random.pareto(a, 1000) + 1) * m
 ```
 5. s
 ```python
