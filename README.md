@@ -156,6 +156,11 @@ speeds[2] =
           self.likes = np.zeros(self.n_flies)
           self.best_fly_indices = np.zeros(self.n_clusters)
 ```
+- 方針決定確率(pioneer・faddist・masterのどれにするのか決める)
+```python
+  #合計すると１になる
+  self.strategies[0.52438472 0.36452948 0.1110858 ]
+```
 2. 敵(enemy)として点(vector)をランダムに一つ選び、全ての点(vector)と順番にオセロで対戦させる。
 ```python
     def EvaluateLikes(self):
