@@ -175,6 +175,7 @@ speeds[2] =
 3.
 ```python
     def Clustering(self):
+        #中心の点(vector)と速度設定
         if self.centers is None:
             model = KMeans(n_clusters=self.n_clusters)
             result = model.fit(self.vectors)
@@ -223,9 +224,22 @@ speeds[2] =
 - 外部モジュール
 ```python
   #パレート分布
-  a, m = 6., 2.  # 分布の幅と、モードを指定   
-  (np.random.pareto(a, 1000) + 1) * m
+  a, mode = 6, 2  # 分布の幅と、モードを指定   
+  (np.random.pareto(a, 1000) + 1) * mode
+
+#パレート分布 (Pareto distribution) は19世紀のイタリア経済学者 Vilfredo Pareto によって考案された確率分布である．
+#ベキ分布 (power law     probability distribution) のひとつに分類される．元々は高額所得者の所得分布を示す分布として提案された．
+#実際の当てはまりも良く，富の8割は人口の2割によって支配されるという80:20の法則，またはパレートの法則として知られる法則を良く表現している．#現在においては経済以外にも自然現象や社会現象等の様々な事例に当てはめられることが分かっており，
+#人口集積のモデル化，ネットワーク間でやり取りされるデータ容量の分布，生物属あたりの生物種のバリエーションのモデル化等，
+#経済学のみならず社会学から生物学まで広範な研究領域に渡って広く用いられている確率分布である．
+#パラメーターはα (>0) およびβ (>0) であり，パレート分布は Par(α, β) にて略記される．確率密度関数は以下で与えられる．
 ```
+- 引用文献
+
+https://data-science.gr.jp/theory/tpd_pareto_distribution.html
+
+https://www.ntrand.com/jp/pareto-distribution/
+
 5. s
 ```python
     def Run(self):
