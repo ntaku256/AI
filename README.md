@@ -6,7 +6,11 @@
 - 群知能の一種で、生物の群れを粒子として模倣している
 - 昆虫の群れなどにおいては，適当な経路を発見した一匹に残りの群れが素早く追従することができるが，これを多次元空間において位置と速度を持つ粒子群でモデル化したもの
 
+<img src="https://github.com/ntaku256/AI/blob/main/Source/PSO.png" width="100%">
+
 https://qiita.com/opticont/items/04a5b4ff41483966987f
+
+
 
 # オセロAI
 ### 価値マップ
@@ -31,6 +35,9 @@ https://qiita.com/opticont/items/04a5b4ff41483966987f
 
   ※同じ値では上から選ばれるので、今回は[2][5]が選ばれる
 ```
+
+
+
 # PSO
 1. それぞれの点(vector)に、各マスのvalueが-30~30の価値マップをランダムに生成する。
 ```python
@@ -140,6 +147,8 @@ speeds[2] =
         return self.g_best_score,self.g_best_vector
 ```
 
+
+
 # Instagram Algorithm
 1. 初期化
 ```python
@@ -176,18 +185,27 @@ speeds[2] =
 3.
 ```python
     def Clustering(self):
-        #中心の点(vector)と速度設定
+        #中心の点(center)と速度設定
         if self.centers is None:
+            #クラスタリング(グループ分け)
             model = KMeans(n_clusters=self.n_clusters)
+
+            #平均を求める
             result = model.fit(self.vectors)
+
+            #重心を求める
+            #result.cluster_centers_ :クラスタ中心の座標
             self.centers = result.cluster_centers_
         else:
             model = KMeans(n_init=1,n_clusters=self.n_clusters,init=self.centers)
             result = model.fit(self.vectors)
+
+        #点(vector)がどのクラスターに分類されるか
         self.labels = result.labels_
         self.center_speeds = result.cluster_centers_ - self.centers
         self.centers = result.cluster_centers_
 
+        #ベストスコアのスコアと対戦場所を記録
         # best flies in each cluster
         best = np.zeros(self.n_clusters)
         self.cluster_like_average = np.zeros(self.n_clusters)
@@ -209,6 +227,18 @@ speeds[2] =
                 self.center_dist_average += (self.centers[i]-self.centers[j])
         self.center_dist_average /= sum(range(1,self.n_clusters))
 ```
+- クラスタリング
+```python
+  #n_init    :クラスタリングの回数 
+  #n_clusters:クラスター(グループ)の数
+  #init      :前回の結果(クラスタの中心)を元にクラスタリングする
+
+  model = KMeans(n_init=1,n_clusters=self.n_clusters,init=self.centers)
+
+  
+  
+```
+
 4. d
 ```python
     def UpdateMaster(self, vector, label):
