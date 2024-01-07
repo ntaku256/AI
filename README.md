@@ -376,8 +376,8 @@ https://www.ntrand.com/jp/pareto-distribution/
 ```
 9. 2~8を繰り返し、最終的には評価マップ(self.vectors[best_arg])とそのときのスコア(self.likes[best_arg])を出力する。(基本使うのは価値マップだけ)
 ```python
-    n_indivisuals = 15  #評価マップの数 (= n_files)
-    n_iters = 10        #評価マップの更新回数 
+    n_indivisuals = 150  #評価マップの数 (= n_files)
+    n_iters = 1000        #評価マップの更新回数 
     n_clusters = 10     #クラスターの数
 
     def Run(self):
