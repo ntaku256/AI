@@ -132,7 +132,7 @@ speeds[2] =
    6.67237175e+00  1.31369359e+01  1.04677501e+01  4.64610831e+00
    1.43879724e+00 -3.13585177e+00 -9.26959553e+00 -1.22254282e+01]
 ```
-6. 2~5を繰り返し、最終的にはg_best_vectorの価値マップとそのときのスコアを出力する。(基本使うのは価値マップだけ)
+6. 2~5を繰り返し、最終的にはg_best_vectorの評価マップとそのときのスコアを出力する。(基本使うのは価値マップだけ)
 ```python
     n_indivisuals = 150  #評価マップ(vector)の数 (= n_swarm)
     n_iters = 10　       #評価マップ(vector)の更新回数 (= n_iter)
@@ -279,11 +279,14 @@ https://pythonbunseki.com/python-k-means/
   #平均を求める
   np.mean()
 
+  #配列内の最大値がある場所を返す
+  np.argmax()
+
   #a = a/b
   a /= b
 ```
 
-4. 評価マップの更新方法を方針決定確率で決めて更新する
+8. 評価マップの更新方法を方針決定確率で決めて更新する
 ```python
     def UpdateFlieVector(self):
         for i in range(self.n_flies):
@@ -297,18 +300,27 @@ https://pythonbunseki.com/python-k-means/
             # master
             if action == 2:
                 self.vectors[i] = self.UpdateMaster(self.vectors[i], self.labels[i])
+            #評価マップの値の上限を超えないように調整する
             filtIndivisual(self.vectors[i])
 ```
 ### Pioneer
 - 開拓者の意味。高専系Youtuberなど、発想力で訳わからんジャンルを開拓し、一部のファンからいいねをもらう人。自分の作品からパレート分布に従う乱数によってランダムに次回作を作成。パレート分布にした理由は遠くに探索を行ってほしかったため。
+- 現在のクラスタを考慮しながら、新しい特徴を持つクラスタを発見しようとする(実際にクラスタ数は増えない)
 ```python
+    def Pareto(mode,a,shape): 
+        return (np.random.pareto(a,size=shape)+1)*mode
+
     def UpdatePioneer(self, vector):
+        #クラスタ間の平均距離
         length = Pareto(1,6,self.center_dist_average.shape)
+        #向き(純方向or逆方向)をランダムに決める
         rand01 = np.random.choice([-1,1],length.shape)
         return vector + self.center_dist_average*length*rand01
 ```
 - パレート分布
   - パレート分布のスケールは各クラスタ間の平均距離になっています。画像はクラスタ間ユーグリット距離の乱数を生成していますが、実際は最適化する変数ごとに乱数を生成しています。
+<img src="https://github.com/ntaku256/AI/blob/main/Source/Pioneer.png" width="80%">
+
 ```python
   #パレート分布
   a, mode = 6, 2  # 分布の幅と、モードを指定   
@@ -328,29 +340,47 @@ https://data-science.gr.jp/theory/tpd_pareto_distribution.html
 
 https://www.ntrand.com/jp/pareto-distribution/
 
+### Master
+- 自分が得意な一つのジャンルでいいね数を稼ぐ。自分の作品のジャンルで一番を目指すことを目標として、作品を作成。
+- クラスタ内でいいねを稼いでいるYoutuber(いいね数のルーレット選択)、クラスタ重心、クラスタの移動速度を参考に新作動画を作成。
+<img src="https://github.com/ntaku256/AI/blob/main/Source/Master.png" width="80%">
 
+- 自信の評価マップがあるクラスタ内で、ランダムに選択した評価マップを参考に位置を更新する
 ```python
     def UpdateMaster(self, vector, label):
+        #参考にするクラスタ内の評価マップを探す
         index_table = [i for i in range(self.n_flies) if(self.labels[i]==label)]
+        #各評価マップのスコアを取り出す
         table = [self.likes[i] for i in index_table]
+        #ランダムに選択した評価マップを目標にする
         target_fly_index = index_table[roulett(table)]
         center = self.centers[label]
+        #クラスタの中心との距離に重み(0~1)を付ける
         center_vector = (center - vector)*np.random.uniform(0,1)
+        #目標の評価マップとの距離に重みを付ける
         target_vector = (self.vectors[target_fly_index] - vector)*np.random.uniform(0,1)
+        #現在のクラスタの中心と前回のクラスタの中心との距離に重みを付ける
         center_speed_vector = self.center_speeds[label]*np.random.uniform(0,1)
         return vector+center_vector+target_vector+center_speed_vector
 
 ```
-- 外部モジュール
-5. s
+### Faddist
+- 流行を追う人という意味。各世代で熱いジャンルを盛り上げる役割。メントスコーラ+自分の特徴みたいな感じで流行りを自分の作品に組み込む。流行りのクラスタ内でいいねを稼いでいるYoutuber、クラスタ重心、クラスタの移動速度を参考に新作動画を作成。
+<img src="https://github.com/ntaku256/AI/blob/main/Source/Faddist.png" width="80%">
+
+- ランダムにクラスタを選び、そのクラスタ内でランダムに選択した評価マップを参考に位置を更新する
+```python
+    def UpdateFaddist(self, vector):
+        cluster = roulett(self.cluster_like_average)
+        return self.UpdateMaster(vector,cluster)
+```
+9. 2~8を繰り返し、最終的には評価マップ(self.vectors[best_arg])とそのときのスコア(self.likes[best_arg])を出力する。(基本使うのは価値マップだけ)
 ```python
     n_indivisuals = 15  #評価マップの数 (= n_files)
     n_iters = 10        #評価マップの更新回数 
     n_clusters = 10     #クラスターの数
 
     def Run(self):
-        fig = plt.figure()
-        imgs = []
         for i in range(self.n_iters):
             self.EvaluateLikes()
             self.Clustering()
