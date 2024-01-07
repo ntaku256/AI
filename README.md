@@ -13,7 +13,7 @@ https://qiita.com/opticont/items/04a5b4ff41483966987f
 
 
 # オセロAI
-### 価値マップ
+### 評価マップ
 - マップに価値をつけ、おける場所の中からvalueが高い場所を選択する。
 - 裏返したマスの価値の総和が最大となる手を選択してゆく。
 - アルゴリズムでは、この価値マップをオセロで多くの駒をとれるように何度も試行錯誤して値を変えていく。
@@ -57,32 +57,32 @@ vector =
    10.29530317   29.42593735  -14.95372671  -28.78418615   19.09774394  -16.58776741  -20.73929498    7.31926295
    17.8158737    24.30464656   22.28706443    8.22550678   24.77724914    5.77699278  -26.36270084    1.7537956 ]
 ```
-2. 敵(enemy)とし点(vector)をランダムに一つ選び、全ての点(vector)と順番にオセロで対戦させる。
-3. 順番に対戦した点(vector)は、結果のスコア(自分の色のマス+空白のマス)と自分の点(vector)内で一番スコアが高かったものと比較し、それよりも高かった場合はp_bestを更新してその点(vector)をp_best_vectorとして記録する。
-4. 結果のスコア(自分の色のマス+空白のマス)と全部の点(vector)の中で一番スコアが高かったものとも比較し、それよりも高ければg_bestを更新してその点(vector)をg_best_vectorとして記録する。
+2. 敵(enemy)とし評価マップ(vector)をランダムに一つ選び、全ての評価マップ(vector)と順番にオセロで対戦させる。
+3. 順番に対戦した評価マップ(vector)は、結果のスコア(自分の色のマス+空白のマス)と自分の評価マップ(vector)内で一番スコアが高かったものと比較し、それよりも高かった場合はp_bestを更新してその評価マップ(vector)をp_best_vectorとして記録する。
+4. 結果のスコア(自分の色のマス+空白のマス)と全部の評価マップ(vector)の中で一番スコアが高かったものとも比較し、それよりも高ければg_bestを更新してその評価マップ(vector)をg_best_vectorとして記録する。
 ```python
   def CalcScores(self):
           #対戦する相手をランダムに決める
           enemy = np.random.randint(0,self.n_swarm,1)
 
-          #決まった点(vector)と全部の点(vector)をそれぞれ対戦させる
+          #決まった評価マップ(vector)と全部の評価マップ(vector)をそれぞれ対戦させる
           for i in range(self.n_swarm):
               new_score = EvalIndivisual(self.vectors[i],self.vectors[enemy])
 
-              #自身の点(vector)のベストスコアと比較し、大きければ更新、評価マップを保存
+              #自身の評価マップ(vector)のベストスコアと比較し、大きければ更新、評価マップを保存
               if new_score > self.p_best_scores[i]:
                   self.p_best_scores[i] = new_score
                   self.p_best_vectors[i] = np.copy(self.vectors[i])
 
-              #全点(vector)のベストスコアと比較し、大きければ更新、評価マップを保存
+              #全評価マップ(vector)のベストスコアと比較し、大きければ更新、評価マップを保存
               if new_score > self.g_best_score:
                   self.g_best_score = new_score
                   self.g_best_vector = np.copy(self.vectors[i])
 ```
 ```
   スコア : (オセロの結果=自分の色があるマス+開いているマス)
-  p_best_score[12] = 40 : 12番目の点(vector)内の自己ベストが40 
-  g_best_score = 50 : 全点(vector)の中でベストスコアが50
+  p_best_score[12] = 40 : 12番目の評価マップ(vector)内の自己ベストが40 
+  g_best_score = 50 : 全評価マップ(vector)の中でベストスコアが50
 ```
 - 外部モジュール
 ```python
@@ -95,8 +95,8 @@ vector =
   # min から max までの数をランダムに 8*8=64 回とる
   np.random.uniform(min,max,(8*8))
 ```
-5. 点(vector)の移動速度を求め、点(vector)を移動させる
-   - 点(vector)の移動速度は、もとの速度・p_best_vectorと現在の点(vector)との距離・g_best_vectorと現在の点(vector)との距離に重みを付けて足し合わせる。
+5. 評価マップ(vector)の移動速度を求め、評価マップ(vector)を移動させる
+   - 評価マップ(vector)の移動速度は、もとの速度・p_best_vectorと現在の評価マップ(vector)との距離・g_best_vectorと現在の評価マップ(vector)との距離に重みを付けて足し合わせる。
 ```python
   def UpdateVectors(self):
           #全点(vector)の位置をそれぞれ更新する。
@@ -106,10 +106,10 @@ vector =
               #g_best(全ベストスコア)の重みをランダムにつける。
               r2 = np.random.uniform(0,1,self.vectors[0].shape)
 
-              #最適解(p_best,g_best)に近づくように点(vector)の移動速度を計算する。
+              #最適解(p_best,g_best)に近づくように評価マップ(vector)の移動速度を計算する。
               self.speeds[i] = self.w*self.speeds[i]+r1*(self.p_best_vectors[i]-self.vectors[i])+r2*(self.g_best_vector-self.vectors[i])
 
-              #点(vector)の位置を更新する。
+              #評価マップ(vector)の位置を更新する。
               self.vectors[i] = self.vectors[i] + self.speeds[i]
 ```
 - 点(vector)の移動速度(speeds)
@@ -134,14 +134,14 @@ speeds[2] =
 ```
 6. 2~5を繰り返し、最終的にはg_best_vectorの価値マップとそのときのスコアを出力する。(基本使うのは価値マップだけ)
 ```python
-    n_indivisuals = 150  #点(vector:価値マップ)の数 (=n_iter)
-    n_iters = 10　       #点(vector)の更新回数
+    n_indivisuals = 150  #評価マップ(vector:価値マップ)の数 (=n_iter)
+    n_iters = 10　       #評価マップ(vector)の更新回数
 
     def Run(self):
         for i in range(self.n_iter):
             #スコア計算
             self.CalcScores()
-            #点(vector)位置更新
+            #評価マップ(vector)位置更新
             self.UpdateVectors()
         #ベストスコアを出力する。
         return self.g_best_score,self.g_best_vector
@@ -171,7 +171,7 @@ speeds[2] =
   #合計すると１になる
   self.strategies[0.52438472 0.36452948 0.1110858 ]
 ```
-2. 敵(enemy)として点(vector)をランダムに一つ選び、全ての点(vector)と順番にオセロで対戦させる。
+2. 敵(enemy)として評価マップ(vector)をランダムに一つ選び、全ての評価マップ(vector)と順番にオセロで対戦させる。
 ```python
     def EvaluateLikes(self):
         #対戦する相手をランダムに決める
@@ -182,7 +182,11 @@ speeds[2] =
             self.likes[i] = EvalIndivisual(self.vectors[i],self.vectors[enemy])
         
 ```
-3.
+3. 評価マップ(vector)をクラスタリング(グループ分け)して、クラスタの中心を求める
+4. 前回計算したクラスタの中心との距離を速度として求める
+5. 各クラスター内のベストスコアを記録する
+6. 各クラスター内の平均スコアを求める
+7. 各クラスターの中心同士の平均距離を求める
 ```python
     def Clustering(self):
         #中心の点(center)と速度設定
@@ -200,12 +204,11 @@ speeds[2] =
             model = KMeans(n_init=1,n_clusters=self.n_clusters,init=self.centers)
             result = model.fit(self.vectors)
 
-        #点(vector)がどのクラスターに分類されるか
+        #評価マップ(vector)がどのクラスターに分類されるか
         self.labels = result.labels_
         self.center_speeds = result.cluster_centers_ - self.centers
         self.centers = result.cluster_centers_
 
-        #ベストスコアのスコアと対戦場所を記録
         # best flies in each cluster
         best = np.zeros(self.n_clusters)
         self.cluster_like_average = np.zeros(self.n_clusters)
@@ -227,7 +230,11 @@ speeds[2] =
                 self.center_dist_average += (self.centers[i]-self.centers[j])
         self.center_dist_average /= sum(range(1,self.n_clusters))
 ```
-- クラスタリング
+### クラスタリング
+- 特定のルールに基づいていくつかのグループに分類
+- 教師なしの機械学習
+### k-means法（k-means method）
+- 非階層的クラスタリング ・・・ 母集団の中で近いデータをまとめる
 ```python
   #n_init    :クラスタリングの回数 
   #n_clusters:クラスター(グループ)の数
@@ -235,8 +242,20 @@ speeds[2] =
 
   model = KMeans(n_init=1,n_clusters=self.n_clusters,init=self.centers)
 
-  
-  
+  #n_init = 1 のとき、
+  #result = model.fit(self.vectors)
+  #で平均を求めても値は変わらない!
+```
+
+https://exawizards.com/column/article/ai/clustering/
+
+- 外部モジュール,その他
+```
+  #平均を求める
+  np.mean()
+
+  #a = a/b
+  a /= b
 ```
 
 4. d
