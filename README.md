@@ -6,7 +6,7 @@
 - 群知能の一種で、生物の群れを粒子として模倣している
 - 昆虫の群れなどにおいては，適当な経路を発見した一匹に残りの群れが素早く追従することができるが，これを多次元空間において位置と速度を持つ粒子群でモデル化したもの
 
-<img src="https://github.com/ntaku256/AI/blob/main/Source/PSO.png" width="100%">
+<img src="https://github.com/ntaku256/AI/blob/main/Source/PSO.png" width="80%">
 
 https://qiita.com/opticont/items/04a5b4ff41483966987f
 
@@ -134,8 +134,8 @@ speeds[2] =
 ```
 6. 2~5を繰り返し、最終的にはg_best_vectorの価値マップとそのときのスコアを出力する。(基本使うのは価値マップだけ)
 ```python
-    n_indivisuals = 150  #評価マップ(vector:価値マップ)の数 (=n_iter)
-    n_iters = 10　       #評価マップ(vector)の更新回数
+    n_indivisuals = 150  #評価マップ(vector)の数 (= n_swarm)
+    n_iters = 10　       #評価マップ(vector)の更新回数 (= n_iter)
 
     def Run(self):
         for i in range(self.n_iter):
@@ -169,7 +169,7 @@ speeds[2] =
 - 方針決定確率(pioneer・faddist・masterのどれにするのか決める)
 ```python
   #合計すると１になる
-  self.strategies[0.52438472 0.36452948 0.1110858 ]
+  self.strategies[i] = [ 0.52438472 0.36452948 0.1110858 ]
 ```
 2. 敵(enemy)として評価マップ(vector)をランダムに一つ選び、全ての評価マップ(vector)と順番にオセロで対戦させる。
 ```python
@@ -233,8 +233,6 @@ speeds[2] =
 ### クラスタリング
 - 特定のルールに基づいていくつかのグループに分類
 - 教師なしの機械学習
-### k-means法（k-means method）
-- 非階層的クラスタリング ・・・ 母集団の中で近いデータをまとめる
 ```python
   #n_init    :クラスタリングの回数 
   #n_clusters:クラスター(グループ)の数
@@ -246,8 +244,35 @@ speeds[2] =
   #result = model.fit(self.vectors)
   #で平均を求めても値は変わらない!
 ```
+### k-means法（k-means method）
+- 非階層的クラスタリング ・・・ 母集団の中で近いデータをまとめる
+- 入力データ
+<img src="https://github.com/ntaku256/AI/blob/main/Source/kmean1.png" width="60%">
+
+1. まず、k個のクラスタの代表点（中心）を決める
+<img src="https://github.com/ntaku256/AI/blob/main/Source/kmean2.png" width="60%">
+
+2. 次に、全てのデータを、もっとも中心が近いクラスタに振り分ける
+<img src="https://github.com/ntaku256/AI/blob/main/Source/kmean3.png" width="60%">
+
+3. クラスタがまとまったら、再度、各クラスタの重心点（平均値）を計算しし直す。重心点を変えることでデータが分類されるクラスタも変わる。
+<img src="https://github.com/ntaku256/AI/blob/main/Source/kmean4.png" width="60%">
+
+4. 全てのデータのクラスタに変更がなくなるまで3の作業を繰り返し、グループ分けを行います。
+### k-meansの問題点
+- 初回にランダムに生成されたセントロイドの場所によって
+  - 極度に偏ったクラスタリングができる
+  - なかなか収束しない事態に陥ってしまう
+### k-means++法
+- 従来のk-meansの初回セントロイド選定方法に改良を加えた手法
+1. まず始めにデータ点をランダムに選び1つ目のクラスタ中心とする
+2. 全てのデータ点とその最近傍のクラスタ中心の距離を求める
+3. その距離の二乗に比例した確率でクラスタ中心として選ばれていないデータ点をクラスタ中心としてランダムに選んでいく
+- 引用文献
 
 https://exawizards.com/column/article/ai/clustering/
+
+https://pythonbunseki.com/python-k-means/
 
 - 外部モジュール,その他
 ```
@@ -258,7 +283,52 @@ https://exawizards.com/column/article/ai/clustering/
   a /= b
 ```
 
-4. d
+4. 評価マップの更新方法を方針決定確率で決めて更新する
+```python
+    def UpdateFlieVector(self):
+        for i in range(self.n_flies):
+            action = roulett(self.strategies[i])
+            # pioneer
+            if action == 0:
+                self.vectors[i] = self.UpdatePioneer(self.vectors[i])
+            # faddist
+            if action == 1:
+                 self.vectors[i] = self.UpdateFaddist(self.vectors[i])
+            # master
+            if action == 2:
+                self.vectors[i] = self.UpdateMaster(self.vectors[i], self.labels[i])
+            filtIndivisual(self.vectors[i])
+```
+### Pioneer
+- 開拓者の意味。高専系Youtuberなど、発想力で訳わからんジャンルを開拓し、一部のファンからいいねをもらう人。自分の作品からパレート分布に従う乱数によってランダムに次回作を作成。パレート分布にした理由は遠くに探索を行ってほしかったため。
+```python
+    def UpdatePioneer(self, vector):
+        length = Pareto(1,6,self.center_dist_average.shape)
+        rand01 = np.random.choice([-1,1],length.shape)
+        return vector + self.center_dist_average*length*rand01
+```
+- パレート分布
+  - パレート分布のスケールは各クラスタ間の平均距離になっています。画像はクラスタ間ユーグリット距離の乱数を生成していますが、実際は最適化する変数ごとに乱数を生成しています。
+```python
+  #パレート分布
+  a, mode = 6, 2  # 分布の幅と、モードを指定   
+  (np.random.pareto(a, 1000) + 1) * mode
+
+#パレート分布 (Pareto distribution) は19世紀のイタリア経済学者 Vilfredo Pareto によって考案された確率分布である．
+#ベキ分布 (power law     probability distribution) のひとつに分類される．元々は高額所得者の所得分布を示す分布として提案された．
+#実際の当てはまりも良く，富の8割は人口の2割によって支配されるという80:20の法則，またはパレートの法則として知られる法則を良く表現している．
+#現在においては経済以外にも自然現象や社会現象等の様々な事例に当てはめられることが分かっており，
+#人口集積のモデル化，ネットワーク間でやり取りされるデータ容量の分布，生物属あたりの生物種のバリエーションのモデル化等，
+#経済学のみならず社会学から生物学まで広範な研究領域に渡って広く用いられている確率分布である．
+#パラメーターはα (>0) およびβ (>0) であり，パレート分布は Par(α, β) にて略記される．確率密度関数は以下で与えられる．
+```
+- 引用文献
+
+https://data-science.gr.jp/theory/tpd_pareto_distribution.html
+
+https://www.ntrand.com/jp/pareto-distribution/
+
+
 ```python
     def UpdateMaster(self, vector, label):
         index_table = [i for i in range(self.n_flies) if(self.labels[i]==label)]
@@ -272,26 +342,12 @@ https://exawizards.com/column/article/ai/clustering/
 
 ```
 - 外部モジュール
-```python
-  #パレート分布
-  a, mode = 6, 2  # 分布の幅と、モードを指定   
-  (np.random.pareto(a, 1000) + 1) * mode
-
-#パレート分布 (Pareto distribution) は19世紀のイタリア経済学者 Vilfredo Pareto によって考案された確率分布である．
-#ベキ分布 (power law     probability distribution) のひとつに分類される．元々は高額所得者の所得分布を示す分布として提案された．
-#実際の当てはまりも良く，富の8割は人口の2割によって支配されるという80:20の法則，またはパレートの法則として知られる法則を良く表現している．#現在においては経済以外にも自然現象や社会現象等の様々な事例に当てはめられることが分かっており，
-#人口集積のモデル化，ネットワーク間でやり取りされるデータ容量の分布，生物属あたりの生物種のバリエーションのモデル化等，
-#経済学のみならず社会学から生物学まで広範な研究領域に渡って広く用いられている確率分布である．
-#パラメーターはα (>0) およびβ (>0) であり，パレート分布は Par(α, β) にて略記される．確率密度関数は以下で与えられる．
-```
-- 引用文献
-
-https://data-science.gr.jp/theory/tpd_pareto_distribution.html
-
-https://www.ntrand.com/jp/pareto-distribution/
-
 5. s
 ```python
+    n_indivisuals = 15  #評価マップの数 (= n_files)
+    n_iters = 10        #評価マップの更新回数 
+    n_clusters = 10     #クラスターの数
+
     def Run(self):
         fig = plt.figure()
         imgs = []
