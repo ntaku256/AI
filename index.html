@@ -51,7 +51,7 @@
             import pyodide
             from js import console, document
             from pyodide.ffi.wrappers import add_event_listener
-
+            
             def do_flip(x, y, color):
                 js.document.getElementById('%d_%d' % (x, y)).color = color
                 img = js.document.getElementById('img%d_%d' % (x, y))
@@ -63,17 +63,25 @@
                     img.style.visibility = 'visible'
                 if color == 'empty':
                     img.style.visibility = 'hidden'
-                
+            
             class Osero:
                 Width = 8
                 Height = 8
+            
+                #white:0, black:1, empty:-1
+                Field = None
+            
+                PlayerColor = None
+                Execution = None
+                PutPosition = []
+                NextMove = 4
+                GetValue = []
+            
                 flag = False
                 color = 0
                 loopon = True
-
-                #white:0, black:1, empty:-1
-                Field = None
-
+            
+            
                 def ResetField(self):
                     self.Field = [[-1 for i in range(self.Width)] for i in range(self.Height)]
                     self.Field[3][3] = 0
@@ -83,81 +91,136 @@
                     self.flag = False
                     self.color = 0
                     self.loopon = True
-
+            
                 def __init__(self):
                     self.ResetField()
-                
+            
                 def Disp(self):
-                    for i in range(self.Height):
-                        for j in range(self.Width):
-                            if self.Field[i][j] == 0:
-                                do_flip(i, j, 'white')
-                            if self.Field[i][j] == 1:
-                                do_flip(i, j, 'black')
-                            if self.Field[i][j] == -1:
-                                do_flip(i, j, 'empty')
-                                
-                def Put(self,y,x,color):
+                                for i in range(self.Height):
+                                    for j in range(self.Width):
+                                        if self.Field[i][j] == 0:
+                                            do_flip(i, j, 'white')
+                                        if self.Field[i][j] == 1:
+                                            do_flip(i, j, 'black')
+                                        if self.Field[i][j] == -1:
+                                            do_flip(i, j, 'empty')
+            
+                def Put(self,y,x,color,field):
                     dxArr = [0,1,1,1,0,-1,-1,-1]
                     dyArr = [1,1,0,-1,-1,-1,0,1]
                     for dx,dy in zip(dxArr,dyArr):
-                        if(l := self.CheckDepth(color,y,x,dy,dx),l!=-1):
+                        if(l := self.CheckDepth(color,y,x,dy,dx,field),l!=-1):
                             xx = x
                             yy = y
                             for i in range(l+1):
-                                self.Field[yy][xx] = color
+                                field[yy][xx] = color
                                 xx += dx
                                 yy += dy
-
-                def CheckDepth(self,color,y,x,dy,dx):
+                    return field
+            
+                def CheckDepth(self,color,y,x,dy,dx,field):
                     depth = 0
                     while(True):
                         y += dy
                         x += dx
-                        if(self.IsInside(y,x)==False or self.Field[y][x] == -1):
+                        if(self.IsInside(y,x)==False or field[y][x] == -1):
                             return -1
-                        if(self.Field[y][x] == color):
+                        if(field[y][x] == color):
                             return depth
                         depth += 1
-
+            
                 def IsInside(self,y,x):
                     return x >= 0 and x < self.Width and y >= 0 and y < self.Height
-
-                def CanPut(self,y,x,color):
-                    if not self.IsInside(y, x) or self.Field[y][x] != -1:
+            
+                def CanPut(self,y,x,color,field):
+                    if not self.IsInside(y, x) or field[y][x] != -1:
                         return False
                     flag = False
                     dxArr = [0,1,1,1,0,-1,-1,-1]
                     dyArr = [1,1,0,-1,-1,-1,0,1]
                     for dx,dy in zip(dxArr,dyArr):
-                        if(self.CheckDepth(color,y,x,dy,dx) > 0):
+                        if(self.CheckDepth(color,y,x,dy,dx,field) > 0):
                             return True
-
+                
+                def CalcStoneValue(self,y,x,color,field,stoneMap):
+                    plusmass = []
+                    dxArr = [0,1,1,1,0,-1,-1,-1]
+                    dyArr = [1,1,0,-1,-1,-1,0,1]
+                    value = stoneMap[y][x]
+                    plusmass.append(stoneMap[y][x])
+                    for dx,dy in zip(dxArr,dyArr):
+                        if(l := self.CheckDepth(color,y,x,dy,dx,field),l!=-1):
+                            xx = x+dx
+                            yy = y+dy
+                            for _ in range(l):
+                                if field[yy][xx] != color:
+                                    plusmass.append(stoneMap[yy][xx])
+                                    value += stoneMap[yy][xx]
+                                xx += dx
+                                yy += dy
+            
+                    # print("GetPos = ",plusmass)
+                    if self.PlayerColor == color:
+                        return -value
+                    else:
+                        return value
+                
                 def GetPossiblePutPositionAndValue(self,color,stoneMap):
                     positions = []
                     values = []
                     for y in range(self.Height):
                         for x in range(self.Width):
-                            if self.CanPut(y,x,color):
+                            if self.CanPut(y,x,color,self.Field):
                                 positions.append([y,x])
-                                values.append(self.CalcStoneValue(y,x,color,stoneMap))
+                                values.append(self.CalcStoneValue(y,x,color,self.Field,stoneMap))
                     return positions,values
-
-                # stoneMap: array(width * height)
-                def CalcStoneValue(self,y,x,color,stoneMap):
-                    dxArr = [0,1,1,1,0,-1,-1,-1]
-                    dyArr = [1,1,0,-1,-1,-1,0,1]
-                    value = stoneMap[y][x]
-                    for dx,dy in zip(dxArr,dyArr):
-                        if(l := self.CheckDepth(color,y,x,dy,dx),l!=-1):
-                            xx = x+dx
-                            yy = y+dy
-                            for _ in range(l):
-                                if self.Field[yy][xx] != color:
-                                    value += stoneMap[yy][xx]
-                                xx += dx
-                                yy += dy
+            
+                def CalcValue(self,field,stoneMap):
+                    value = 0
+                    for y in range(self.Height):
+                            for x in range(self.Width):
+                                if field[y][x] == self.PlayerColor:
+                                    value -=stoneMap[y][x]
+                                elif field[y][x] == (self.PlayerColor + 1)%2:
+                                    value +=stoneMap[y][x]
                     return value
+            
+                def GetPossiblePutPosition(self,color,field,n,stoneMap,value = 0):
+                    positions = []
+                    values = []
+                    PossiblePositon = False 
+                    if n<self.NextMove:
+                        for y in range(self.Height):
+                            for x in range(self.Width):
+                                if self.CanPut(y,x,color,field):
+                                    subValue = np.copy(value)
+                                    PossiblePositon = True
+                                    putField = self.Put(y,x,color,np.copy(field))
+                                    self.Execution[n] = self.Execution[n] + 1
+                                    subValue += self.CalcStoneValue(y,x,color,field,stoneMap)
+                                    # print("Execution = ",self.Execution,"\tclass = ",n,"\tPut = ",[y,x],"\tvalue = ",subValue)
+                                    # self.Disp(putField)
+                                    positions.append([y,x])
+                                    values.append(self.GetPossiblePutPosition((color + 1)%2,putField,n + 1,stoneMap,np.copy(subValue)))
+                        if PossiblePositon is False:
+                            values.append(self.GetPossiblePutPosition((color + 1)%2,field,n + 1,stoneMap,np.copy(value)))
+                    # if values != []:
+                    #     print("class = ",n,"\tvalues = ",values)
+            
+                    if n == 0:
+                        if values !=[]:
+                            # print("PossiblePositons = ",positions,"\tvalue = ",np.argmax(values))
+                            return positions[np.argmax(values)]
+                    elif n == self.NextMove:
+                        # return self.CalcValue(field,stoneMap)
+                        return value
+                    else:
+                        if values !=[]:
+                            if self.PlayerColor == color:
+                                return max(values)
+                            else:
+                                return min(values)
+                        return 0
                 
                 def Result(self):
                     n_white = 0
@@ -173,32 +236,38 @@
                             if self.Field[y][x] == 1:
                                 n_black += 1
                     return n_white,n_black,n_sum
-                         
+                
                 def PlayPSO(self,stonemapAI):
-                    arr,values = self.GetPossiblePutPositionAndValue(self.color,stonemapAI)
-                    ## 二連続でどっちも置く場所がなければ終わり
-                    if len(arr) == 0:
-                        if self.flag:
-                            self.loopon = False
-                        if self.loopon == True:
-                            self.color = (self.color + 1)%2
-                            self.flag = True
-                    else:
-                        self.flag = False
-                        if self.loopon == True:
-                            best_hand_arg = np.argmax(values)
-                            best_hand = arr[best_hand_arg]
-                            self.Put(best_hand[0],best_hand[1],self.color)
-                            self.color = (self.color + 1)%2
-                    if self.color == 0:
-                        print("●の番です")
-                    else:
-                        print("○の番です")
-                    if self.loopon == False:
-                        n_white,n_black,n_sum = self.Result()
-                        print("white:",n_white,"black:",n_black,"total:",n_sum) 
-                    self.Disp()
-
+                                arr,values = self.GetPossiblePutPositionAndValue(self.color,stonemapAI)
+                                ## 二連続でどっちも置く場所がなければ終わり
+                                if len(arr) == 0:
+                                    if self.flag:
+                                        self.loopon = False
+                                    if self.loopon == True:
+                                        self.color = (self.color + 1)%2
+                                        self.flag = True
+                                else:
+                                    self.flag = False
+                                    if self.loopon == True:
+                                        self.Execution = [0 for i in range(self.NextMove)]
+                                        bestPosition = []
+                                        bestPosition = self.GetPossiblePutPosition(np.copy(color),np.copy(self.Field),0,stonemapAI)
+                                        if bestPosition != []:
+                                            print("Execution = ",self.Execution)
+                                            print("BestPosition = ",bestPosition)
+                                            self.Put(bestPosition[0],bestPosition[1],color,self.Field)
+                                        else:
+                                            print("BestPosition = None")
+                                        color = (color + 1)%2
+                                if self.color == 0:
+                                    print("●の番です")
+                                else:
+                                    print("○の番です")
+                                if self.loopon == False:
+                                    n_white,n_black,n_sum = self.Result()
+                                    print("white:",n_white,"black:",n_black,"total:",n_sum) 
+                                self.Disp(self.Field)
+            
                 def playosero(self,x,y,stonemapAI):
                     stoneMap = [[  4.64442892,-5.94676174  ,-8.22406289,-3.54108864,14.449 ,-12.25701246, -4.85005069, -3.0631509 ],
                     [  2.44601732 , 7.28178502,  3.87052249, -6.61112403 , 2.88436812, 2.28200454 , 2.88739893 , 6.69401217],
@@ -234,8 +303,8 @@
                     if self.loopon == False:
                         n_white,n_black,n_sum = self.Result()
                         print("white:",n_white,"black:",n_black,"total:",n_sum) 
-                    self.Disp()
-
+                    self.Disp(self.Field)
+            
             def PlayOsero(stoneMap1,stoneMap2):
                 o = Osero()
                 flag = False
@@ -246,8 +315,8 @@
                         stoneMap = stoneMap1
                     else:
                         stoneMap = stoneMap2
-                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
-
+                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap)
+            
                     ## 二連続でどっちも置く場所がなければ終わり
                     if len(arr) == 0:
                         if flag:
@@ -257,16 +326,23 @@
                         continue
                     else:
                         flag = False
-                    best_hand_arg = np.argmax(values)
-                    best_hand = arr[best_hand_arg]
-                    o.Put(best_hand[0],best_hand[1],color)
+            
+                    o.Execution = [0 for i in range(o.NextMove)]
+                    bestPosition = []
+                    bestPosition = o.GetPossiblePutPosition(np.copy(color),np.copy(o.Field),0,stoneMap)
+                    if bestPosition != []:
+                        # print("Execution = ",o.Execution)
+                        # print("BestPosition = ",bestPosition)
+                        o.Put(bestPosition[0],bestPosition[1],color,o.Field)
+                    # else:
+                        # print("BestPosition = None")
                     color = (color + 1)%2
                 return o.Result()
-
+            
             def Evaluate(stoneMap1,stoneMap2):
                 n_white,n_black,n_sum = PlayOsero(stoneMap1,stoneMap2)
                 return n_white + 8*8 - n_sum
-
+            
             def Pareto(mode,a,shape):
                 return (np.random.pareto(a,size=shape)+1)*mode
             
@@ -301,7 +377,7 @@
                 g_best_vector = None
                 p_best_scores = None
                 p_best_vectors = None
-
+            
                 def __init__(self,n_iter,n_swarm,w,c1,c2):
                     self.n_iter = n_iter
                     self.n_swarm = n_swarm
@@ -344,7 +420,7 @@
                         self.CalcScores()
                         self.UpdateVectors()
                     return self.g_best_score,self.g_best_vector
-
+            
             class InstaGramFlies:
                 n_iters = None
                 n_clusters = None
@@ -474,12 +550,12 @@
                     target_vector = (self.vectors[target_fly_index] - vector)*np.random.uniform(0,1)
                     center_speed_vector = self.center_speeds[label]*np.random.uniform(0,1)
                     return vector+center_vector+target_vector+center_speed_vector
-
+            
             def on_click(e):
                 x, y = [int(i) for i in e.target.id.split('_')]
                 print("[ "+str(x)+" , "+str(y)+" ]")
                 o.playosero(x,y,stonemapAI)
-
+            
             board = js.document.getElementById('board')
             for i in range(8):
                 tr = js.document.createElement('tr')
@@ -498,7 +574,7 @@
                     td.appendChild(img)
                     tr.appendChild(td)
                 board.appendChild(tr)
-        
+            
             n_indivisuals = 150
             n_iters = 15
             n_clusters = 10
@@ -512,19 +588,19 @@
             o = Osero() 
             print("●の番です")
             o.Disp()
-
+            
             def Reset():
                 o.ResetField()
                 print("●の番です")
                 o.Disp()     
-
+            
             def InstaReset():
                 n_iters = 30
                 instaFlies = InstaGramFlies(n_iters, n_clusters, n_indivisuals)
                 _, if_res = instaFlies.Run()
                 stonemapAI = if_res.reshape((8,8))
                 print(stonemapAI)
-
+            
             def PSOReset():
                 n_iters = 30
                 pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
