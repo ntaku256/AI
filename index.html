@@ -195,7 +195,7 @@
                                     PossiblePositon = True
                                     putField = self.Put(y,x,color,np.copy(field))
                                     self.Execution[n] = self.Execution[n] + 1
-                                    subValue += self.CalcStoneValue(y,x,color,field,stoneMap)
+                                    subValue += int(self.CalcStoneValue(y,x,color,field,stoneMap))
                                     # print("Execution = ",self.Execution,"\tclass = ",n,"\tPut = ",[y,x],"\tvalue = ",subValue)
                                     # self.Disp(putField)
                                     positions.append([y,x])
@@ -573,8 +573,8 @@
                     tr.appendChild(td)
                 board.appendChild(tr)
             
-            n_indivisuals = 150
-            n_iters = 15
+            n_indivisuals = 15
+            n_iters = 10
             n_clusters = 10
             c1 = 0.7
             c2 = 0.7
