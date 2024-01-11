@@ -481,3 +481,285 @@ if __name__ == "__main__":
     n_white,n_black,n_sum = o.Result()
     print("white:",n_white,"black:",n_black,"total:",n_sum)
 ```
+
+```python
+import copy
+import random
+
+class OthelloAI:
+    exe = 0
+    def __init__(self, depth):
+        self.depth = depth
+
+    def evaluate_board(self, board, maximizing_player):
+        player_piece = 'X' if maximizing_player else 'O'
+        opponent_piece = 'O' if maximizing_player else 'X'
+
+        player_score = 0
+        opponent_score = 0
+
+        # マスの評価値
+        position_values = [
+            [30, -12, 0, -1, -1, 0, -12, 30],
+            [-12, -15, -3, -3, -3, -3, -15, -12],
+            [0, -3, 0, -1, -1, 0, -3, 0],
+            [-1, -3, -1, -1, -1, -1, -3, -1],
+            [-1, -3, -1, -1, -1, -1, -3, -1],
+            [0, -3, 0, -1, -1, 0, -3, 0],
+            [-12, -15, -3, -3, -3, -3, -15, -12],
+            [30, -12, 0, -1, -1, 0, -12, 30]
+        ]
+
+        for i in range(8):
+            for j in range(8):
+                if board[i][j] == player_piece:
+                    player_score += position_values[i][j]
+                elif board[i][j] == opponent_piece:
+                    opponent_score += position_values[i][j]
+
+        return player_score - opponent_score
+
+    def nega_alpha(self, board, depth, alpha, beta, maximizing_player):
+        self.exe += 1
+        if depth == 0 or self.is_game_over(board):
+            return self.evaluate_board(board, maximizing_player)
+
+        legal_moves = self.get_legal_moves(board, maximizing_player)
+
+        if maximizing_player:
+            max_eval = float('-inf')
+            for move in legal_moves:
+                new_board = self.make_move(copy.deepcopy(board), move, maximizing_player)
+                eval = self.nega_alpha(new_board, depth - 1, alpha, beta, False)
+                max_eval = max(max_eval, eval)
+                alpha = max(alpha, eval)
+                if beta <= alpha:
+                    break
+            return max_eval
+        else:
+            min_eval = float('inf')
+            for move in legal_moves:
+                new_board = self.make_move(copy.deepcopy(board), move, maximizing_player)
+                eval = self.nega_alpha(new_board, depth - 1, alpha, beta, True)
+                min_eval = min(min_eval, eval)
+                beta = min(beta, eval)
+                if beta <= alpha:
+                    break
+            return min_eval
+
+    def get_best_move(self, board, player):
+        legal_moves = self.get_legal_moves(board, player)
+        best_moves = [legal_moves[0]]
+        max_eval = float('-inf')
+
+        for move in legal_moves:
+            new_board = self.make_move(copy.deepcopy(board), move, player)
+            eval = self.nega_alpha(new_board, self.depth - 1, float('-inf'), float('inf'), False)
+
+            if eval > max_eval:
+                max_eval = eval
+                best_moves = [move]
+            elif eval == max_eval:
+                best_moves.append(move)
+
+        return random.choice(best_moves)
+
+    def is_game_over(self, board):
+        return not any(' ' in row for row in board) or (not self.get_legal_moves(board, True) and not self.get_legal_moves(board, False))
+
+    def get_legal_moves(self, board, player):
+        legal_moves = []
+        for i in range(8):
+            for j in range(8):
+                if self.is_valid_move(board, i, j, player):
+                    legal_moves.append((i, j))
+        return legal_moves
+
+    def is_valid_move(self, board, row, col, player):
+        if board[row][col] != ' ':
+            return False
+
+        opponent_piece = 'O' if player else 'X'
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
+
+        for dr, dc in directions:
+            r, c = row + dr, col + dc
+            if self.is_inside_board(r, c) and board[r][c] == opponent_piece:
+                while self.is_inside_board(r, c) and board[r][c] == opponent_piece:
+                    r += dr
+                    c += dc
+                if self.is_inside_board(r, c) and board[r][c] == ('X' if player else 'O'):
+                    return True
+
+        return False
+
+    def is_inside_board(self, row, col):
+        return 0 <= row < 8 and 0 <= col < 8
+
+    def make_move(self, board, move, player):
+        row, col = move
+        player_piece = 'X' if player else 'O'
+        opponent_piece = 'O' if player else 'X'
+
+        if board[row][col] != ' ':
+            raise ValueError("Invalid move. The cell is not empty.")
+
+        board[row][col] = player_piece
+
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
+
+        for dr, dc in directions:
+            r, c = row + dr, col + dc
+            flipped = False
+            while self.is_inside_board(r, c) and board[r][c] == opponent_piece:
+                flipped = True
+                r += dr
+                c += dc
+
+            if self.is_inside_board(r, c) and board[r][c] == player_piece and flipped:
+                r, c = row + dr, col + dc
+                while board[r][c] == opponent_piece:
+                    board[r][c] = player_piece
+                    r += dr
+                    c += dc
+
+        return board
+
+
+class OthelloGame:
+    def __init__(self):
+        self.board = self.initialize_board()
+
+    def initialize_board(self):
+        board = [[' ' for _ in range(8)] for _ in range(8)]
+        board[3][3] = 'O'
+        board[3][4] = 'X'
+        board[4][3] = 'X'
+        board[4][4] = 'O'
+        return board
+
+    def display_board(self):
+        print("   0  1  2  3  4  5  6  7")
+        print(" + -+ -+ -+ -+ -+ -+ -+ -")
+        for i, row in enumerate(self.board):
+            print(f"{i}|", end=" ")
+            for cell in row:
+                print(cell, end="| ")
+            print("")
+        print(" +-+-+-+-+-+-+-+-")
+    
+    def get_scores(self):
+        player_score = sum(row.count('X') for row in self.board)
+        opponent_score = sum(row.count('O') for row in self.board)
+        return player_score, opponent_score
+
+    def play_game(self):
+        ai = OthelloAI(depth=7)
+        player_turn = True
+
+        while not self.is_game_over():
+            self.display_board()
+
+            if player_turn:
+                self.ai_move(ai)
+            else:
+                self.ai_move(ai)
+
+            player_turn = not player_turn
+
+        self.display_board()
+        player_score, opponent_score = self.get_scores()
+        print(f"Player Score: {player_score}")
+        print(f"AI Score: {opponent_score}")
+        if player_score > opponent_score:
+            print("Player wins!")
+        elif player_score < opponent_score:
+            print("AI wins!")
+        else:
+            print("It's a draw!")
+        print("Game Over")
+
+    def player_move(self):
+        try:
+            row = int(input("Enter the row (0-7): "))
+            col = int(input("Enter the column (0-7): "))
+            if self.is_valid_move(row, col, True):
+                self.make_move(row, col, True)
+            else:
+                print("Invalid move. Try again.")
+                self.player_move()
+        except ValueError:
+            print("Invalid input. Please enter a number.")
+            self.player_move()
+
+    def ai_move(self, ai):
+        print("AI's move:")
+        ai.exe = 0
+        move = ai.get_best_move(self.board, False)
+        self.make_move(move[0], move[1], False)
+        print("execution",ai.exe)
+
+    def is_valid_move(self, row, col, player):
+        if self.board[row][col] != ' ':
+            return False
+
+        opponent_piece = 'O' if player else 'X'
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
+
+        for dr, dc in directions:
+            r, c = row + dr, col + dc
+            if self.is_inside_board(r, c) and self.board[r][c] == opponent_piece:
+                while self.is_inside_board(r, c) and self.board[r][c] == opponent_piece:
+                    r += dr
+                    c += dc
+                if self.is_inside_board(r, c) and self.board[r][c] == ('X' if player else 'O'):
+                    return True
+
+        return False
+
+    def is_game_over(self):
+        return not any(' ' in row for row in self.board) or (not self.get_legal_moves(True) and not self.get_legal_moves(False))
+
+    def get_legal_moves(self, player):
+        legal_moves = []
+        for i in range(8):
+            for j in range(8):
+                if self.is_valid_move(i, j, player):
+                    legal_moves.append((i, j))
+        return legal_moves
+
+    def is_inside_board(self, row, col):
+        return 0 <= row < 8 and 0 <= col < 8
+
+    def make_move(self, row, col, player):
+        player_piece = 'X' if player else 'O'
+        opponent_piece = 'O' if player else 'X'
+
+        if self.board[row][col] != ' ':
+            raise ValueError("Invalid move. The cell is not empty.")
+
+        self.board[row][col] = player_piece
+
+        directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
+
+        for dr, dc in directions:
+            r, c = row + dr, col + dc
+            flipped = False
+            while self.is_inside_board(r, c) and self.board[r][c] == opponent_piece:
+                flipped = True
+                r += dr
+                c += dc
+
+            if self.is_inside_board(r, c) and self.board[r][c] == player_piece and flipped:
+                r, c = row + dr, col + dc
+                while self.board[r][c] == opponent_piece:
+                    self.board[r][c] = player_piece
+                    r += dr
+                    c += dc
+
+
+# 使用例
+if __name__ == "__main__":
+    game = OthelloGame()
+    game.play_game()
+```
