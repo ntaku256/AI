@@ -159,7 +159,7 @@ speeds[2] =
 
 
 
-# Instagram Algorithm
+# InstaBae Algorithm
 1. 初期化
 ```python
   def InitFlies(self):
