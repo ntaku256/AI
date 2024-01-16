@@ -43,442 +43,286 @@
         <py-script>
         </py-script>
         <py-script>
-            import numpy as np
-            import matplotlib.pyplot as plt
-            import matplotlib.animation as anime
-            from sklearn.cluster import KMeans
+            import copy
             import random
             import pyodide
             from js import console, document
             from pyodide.ffi.wrappers import add_event_listener
-
             def do_flip(x, y, color):
-                js.document.getElementById('%d_%d' % (x, y)).color = color
-                img = js.document.getElementById('img%d_%d' % (x, y))
-                if color == 'white':
-                    img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/white.png'
-                    img.style.visibility = 'visible'
-                if color == 'black':
-                    img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/black.png'
-                    img.style.visibility = 'visible'
-                if color == 'empty':
-                    img.style.visibility = 'hidden'
-                
-            class Osero:
-                Width = 8
-                Height = 8
-                flag = False
-                color = 0
-                loopon = True
+                            js.document.getElementById('%d_%d' % (x, y)).color = color
+                            img = js.document.getElementById('img%d_%d' % (x, y))
+                            if color == 'white':
+                                img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/white.png'
+                                img.style.visibility = 'visible'
+                            if color == 'black':
+                                img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/black.png'
+                                img.style.visibility = 'visible'
+                            if color == 'empty':
+                                img.style.visibility = 'hidden'
 
-                #white:0, black:1, empty:-1
-                Field = None
+            class OthelloAI:
+                def __init__(self, depth):
+                    self.depth = depth
 
-                def ResetField(self):
-                    self.Field = [[-1 for i in range(self.Width)] for i in range(self.Height)]
-                    self.Field[3][3] = 0
-                    self.Field[3][4] = 1
-                    self.Field[4][3] = 1
-                    self.Field[4][4] = 0
-                    self.flag = False
-                    self.color = 0
-                    self.loopon = True
+                def evaluate_board(self, board, maximizing_player):
+                    player_piece = 'X' if maximizing_player else 'O'
+                    opponent_piece = 'O' if maximizing_player else 'X'
+
+                    player_score = 0
+                    opponent_score = 0
+
+                    # マスの評価値
+                    position_values = [
+                        [30, -12, 0, -1, -1, 0, -12, 30],
+                        [-12, -15, -3, -3, -3, -3, -15, -12],
+                        [0, -3, 0, -1, -1, 0, -3, 0],
+                        [-1, -3, -1, -1, -1, -1, -3, -1],
+                        [-1, -3, -1, -1, -1, -1, -3, -1],
+                        [0, -3, 0, -1, -1, 0, -3, 0],
+                        [-12, -15, -3, -3, -3, -3, -15, -12],
+                        [30, -12, 0, -1, -1, 0, -12, 30]
+                    ]
+
+                    for i in range(8):
+                        for j in range(8):
+                            if board[i][j] == player_piece:
+                                player_score += position_values[i][j]
+                            elif board[i][j] == opponent_piece:
+                                opponent_score += position_values[i][j]
+
+                    return player_score - opponent_score
+
+                def nega_alpha(self, board, depth, alpha, beta, maximizing_player):
+                    if depth == 0 or self.is_game_over(board):
+                        return self.evaluate_board(board, maximizing_player)
+
+                    legal_moves = self.get_legal_moves(board, maximizing_player)
+
+                    if maximizing_player:
+                        max_eval = float('-inf')
+                        for move in legal_moves:
+                            new_board = self.make_move(copy.deepcopy(board), move, maximizing_player)
+                            eval = self.nega_alpha(new_board, depth - 1, alpha, beta, False)
+                            max_eval = max(max_eval, eval)
+                            alpha = max(alpha, eval)
+                            if beta <= alpha:
+                                break
+                        return max_eval
+                    else:
+                        min_eval = float('inf')
+                        for move in legal_moves:
+                            new_board = self.make_move(copy.deepcopy(board), move, maximizing_player)
+                            eval = self.nega_alpha(new_board, depth - 1, alpha, beta, True)
+                            min_eval = min(min_eval, eval)
+                            beta = min(beta, eval)
+                            if beta <= alpha:
+                                break
+                        return min_eval
+
+                def get_best_move(self, board, player):
+                    legal_moves = self.get_legal_moves(board, player)
+                    best_move = legal_moves[0]
+                    max_eval = float('-inf')
+
+                    for move in legal_moves:
+                        new_board = self.make_move(copy.deepcopy(board), move, player)
+                        eval = self.nega_alpha(new_board, self.depth - 1, float('-inf'), float('inf'), False)
+                        if eval > max_eval:
+                            max_eval = eval
+                            best_move = move
+
+                    return best_move
+
+                def is_game_over(self, board):
+                    return not any(' ' in row for row in board) or (not self.get_legal_moves(board, True) and not self.get_legal_moves(board, False))
+
+                def get_legal_moves(self, board, player):
+                    legal_moves = []
+                    for i in range(8):
+                        for j in range(8):
+                            if self.is_valid_move(board, i, j, player):
+                                legal_moves.append((i, j))
+                    return legal_moves
+
+                def is_valid_move(self, board, row, col, player):
+                    if board[row][col] != ' ':
+                        return False
+
+                    opponent_piece = 'O' if player else 'X'
+                    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
+
+                    for dr, dc in directions:
+                        r, c = row + dr, col + dc
+                        if self.is_inside_board(r, c) and board[r][c] == opponent_piece:
+                            while self.is_inside_board(r, c) and board[r][c] == opponent_piece:
+                                r += dr
+                                c += dc
+                            if self.is_inside_board(r, c) and board[r][c] == ('X' if player else 'O'):
+                                return True
+
+                    return False
+
+                def is_inside_board(self, row, col):
+                    return 0 <= row < 8 and 0 <= col < 8
+
+                def make_move(self, board, move, player):
+                    row, col = move
+                    player_piece = 'X' if player else 'O'
+                    opponent_piece = 'O' if player else 'X'
+
+                    if board[row][col] != ' ':
+                        raise ValueError("Invalid move. The cell is not empty.")
+
+                    board[row][col] = player_piece
+
+                    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
+
+                    for dr, dc in directions:
+                        r, c = row + dr, col + dc
+                        flipped = False
+                        while self.is_inside_board(r, c) and board[r][c] == opponent_piece:
+                            flipped = True
+                            r += dr
+                            c += dc
+
+                        if self.is_inside_board(r, c) and board[r][c] == player_piece and flipped:
+                            r, c = row + dr, col + dc
+                            while board[r][c] == opponent_piece:
+                                board[r][c] = player_piece
+                                r += dr
+                                c += dc
+
+                    return board
+
+
+            class OthelloGame:
+                player_turn = True
 
                 def __init__(self):
-                    self.ResetField()
-                
-                def Disp(self):
-                    for i in range(self.Height):
-                        for j in range(self.Width):
-                            if self.Field[i][j] == 0:
-                                do_flip(i, j, 'white')
-                            if self.Field[i][j] == 1:
-                                do_flip(i, j, 'black')
-                            if self.Field[i][j] == -1:
-                                do_flip(i, j, 'empty')
-                                
-                def Put(self,y,x,color):
-                    dxArr = [0,1,1,1,0,-1,-1,-1]
-                    dyArr = [1,1,0,-1,-1,-1,0,1]
-                    for dx,dy in zip(dxArr,dyArr):
-                        if(l := self.CheckDepth(color,y,x,dy,dx),l!=-1):
-                            xx = x
-                            yy = y
-                            for i in range(l+1):
-                                self.Field[yy][xx] = color
-                                xx += dx
-                                yy += dy
+                    self.board = self.initialize_board()
 
-                def CheckDepth(self,color,y,x,dy,dx):
-                    depth = 0
-                    while(True):
-                        y += dy
-                        x += dx
-                        if(self.IsInside(y,x)==False or self.Field[y][x] == -1):
-                            return -1
-                        if(self.Field[y][x] == color):
-                            return depth
-                        depth += 1
+                def initialize_board(self):
+                    board = [[' ' for _ in range(8)] for _ in range(8)]
+                    board[3][3] = 'O'
+                    board[3][4] = 'X'
+                    board[4][3] = 'X'
+                    board[4][4] = 'O'
+                    return board
 
-                def IsInside(self,y,x):
-                    return x >= 0 and x < self.Width and y >= 0 and y < self.Height
+                def display_board(self):
+                    print("  0 1 2 3 4 5 6 7")
+                    print(" +-+-+-+-+-+-+-+-")
+                    for i, row in enumerate(self.board):
+                        print(f"{i}|", end=" ")
+                        for j,cell in row:
+                            print(cell, end=" ")
+                        print("|")
+                    print(" +-+-+-+-+-+-+-+-")
+                    for i in range(8):
+                        for j in range(8):
+                            do_flip(i,j,self.board[i][j])
 
-                def CanPut(self,y,x,color):
-                    if not self.IsInside(y, x) or self.Field[y][x] != -1:
-                        return False
-                    flag = False
-                    dxArr = [0,1,1,1,0,-1,-1,-1]
-                    dyArr = [1,1,0,-1,-1,-1,0,1]
-                    for dx,dy in zip(dxArr,dyArr):
-                        if(self.CheckDepth(color,y,x,dy,dx) > 0):
-                            return True
+                def play_game(self):
+                    ai = OthelloAI(depth=3)
+                    self.player_turn = True
 
-                def GetPossiblePutPositionAndValue(self,color,stoneMap):
-                    positions = []
-                    values = []
-                    for y in range(self.Height):
-                        for x in range(self.Width):
-                            if self.CanPut(y,x,color):
-                                positions.append([y,x])
-                                values.append(self.CalcStoneValue(y,x,color,stoneMap))
-                    return positions,values
+                    while not self.is_game_over():
+                        self.display_board()
 
-                # stoneMap: array(width * height)
-                def CalcStoneValue(self,y,x,color,stoneMap):
-                    dxArr = [0,1,1,1,0,-1,-1,-1]
-                    dyArr = [1,1,0,-1,-1,-1,0,1]
-                    value = stoneMap[y][x]
-                    for dx,dy in zip(dxArr,dyArr):
-                        if(l := self.CheckDepth(color,y,x,dy,dx),l!=-1):
-                            xx = x+dx
-                            yy = y+dy
-                            for _ in range(l):
-                                if self.Field[yy][xx] != color:
-                                    value += stoneMap[yy][xx]
-                                xx += dx
-                                yy += dy
-                    return value
-                
-                def Result(self):
-                    n_white = 0
-                    n_black = 0
-                    n_sum = 0
-                    for y in range(self.Height):
-                        for x in range(self.Width):
-                            if self.Field[y][x] == -1:
-                                continue
-                            n_sum += 1
-                            if self.Field[y][x] == 0:
-                                n_white += 1
-                            if self.Field[y][x] == 1:
-                                n_black += 1
-                    return n_white,n_black,n_sum
-                         
-                def PlayPSO(self,stonemapAI):
-                    arr,values = self.GetPossiblePutPositionAndValue(self.color,stonemapAI)
-                    ## 二連続でどっちも置く場所がなければ終わり
-                    if len(arr) == 0:
-                        if self.flag:
-                            self.loopon = False
-                        if self.loopon == True:
-                            self.color = (self.color + 1)%2
-                            self.flag = True
-                    else:
-                        self.flag = False
-                        if self.loopon == True:
-                            best_hand_arg = np.argmax(values)
-                            best_hand = arr[best_hand_arg]
-                            self.Put(best_hand[0],best_hand[1],self.color)
-                            self.color = (self.color + 1)%2
-                    if self.color == 0:
-                        print("●の番です")
-                    else:
-                        print("○の番です")
-                    if self.loopon == False:
-                        n_white,n_black,n_sum = self.Result()
-                        print("white:",n_white,"black:",n_black,"total:",n_sum) 
-                    self.Disp()
-
-                def playosero(self,x,y,stonemapAI):
-                    stoneMap = [[  4.64442892,-5.94676174  ,-8.22406289,-3.54108864,14.449 ,-12.25701246, -4.85005069, -3.0631509 ],
-                    [  2.44601732 , 7.28178502,  3.87052249, -6.61112403 , 2.88436812, 2.28200454 , 2.88739893 , 6.69401217],
-                    [ -9.63874628 , 1.33511466 , 3.94920367 , 4.25621057 , 8.48590166, -18.34996554,  4.75598223 , -5.86846399],
-                    [-21.5525791 ,-10.40855294,  9.65304426 ,-6.7865024  , 3.43632992,1.78858655,  8.07561675, 3.20647401],
-                    [  3.35587021 ,-5.91740211, -3.10004183, 16.31703601, -2.99102139,4.97680409,  4.27546672, -2.95882175],
-                    [  1.82883348 ,-3.98875031 , 3.50467481  ,5.20606844, -0.58939011, -6.0727421,  2.78332894, -4.35495494],
-                    [ -8.55768735,-5.81515668, 3.06846976 , -4.45747499 , -2.30405207 ,-4.10293077 ,-4.88844761 , 5.65605183],
-                    [  0.51941962, -1.71454956 ,-6.73718104, -6.2447815  , 3.09940919 ,5.71136616 ,-4.03695552 ,-1.24283584]]
-                    
-                    arr,values = self.GetPossiblePutPositionAndValue(self.color,stoneMap)
-                    ## 二連続でどっちも置く場所がなければ終わり
-                    if len(arr) == 0:
-                        if self.flag:
-                            self.loopon = False
-                        if self.loopon == True:
-                            self.color = (self.color + 1)%2
-                            self.flag = True
-                    else:
-                        self.flag = False
-                    if self.loopon == True:
-                        if not self.CanPut(x, y, self.color):
-                            print("置やんぞ!!")
-                            self.flag = True
+                        if self.player_turn:
+                            return
                         else:
-                            self.Put(x, y, self.color)
-                            self.color = (self.color + 1)%2
-                    if self.color == 0:
-                        print("●の番です")
-                    else:
-                        print("○の番です")
-                        self.PlayPSO(stonemapAI)
-                    if self.loopon == False:
-                        n_white,n_black,n_sum = self.Result()
-                        print("white:",n_white,"black:",n_black,"total:",n_sum) 
-                    self.Disp()
+                            self.ai_move(ai)
 
-            def PlayOsero(stoneMap1,stoneMap2):
-                o = Osero()
-                flag = False
-                color = 0
-                while(True):
-                    stoneMap = None
-                    if color == 0:
-                        stoneMap = stoneMap1
-                    else:
-                        stoneMap = stoneMap2
-                    arr,values = o.GetPossiblePutPositionAndValue(color,stoneMap2)
+                        self.player_turn = not self.player_turn
 
-                    ## 二連続でどっちも置く場所がなければ終わり
-                    if len(arr) == 0:
-                        if flag:
-                            break
-                        color = (color + 1)%2
-                        flag = True
-                        continue
-                    else:
-                        flag = False
-                    best_hand_arg = np.argmax(values)
-                    best_hand = arr[best_hand_arg]
-                    o.Put(best_hand[0],best_hand[1],color)
-                    color = (color + 1)%2
-                return o.Result()
+                    self.display_board()
+                    print("Game Over")
 
-            def Evaluate(stoneMap1,stoneMap2):
-                n_white,n_black,n_sum = PlayOsero(stoneMap1,stoneMap2)
-                return n_white + 8*8 - n_sum
+                def player_move(self,row,col):
+                    try:
+                        # row = int(input("Enter the row (0-7): "))
+                        # col = int(input("Enter the column (0-7): "))
+                        if self.is_valid_move(row, col, True):
+                            self.make_move(row, col, True)
+                        else:
+                            print("Invalid move. Try again.")
+                            self.player_move()
+                    except ValueError:
+                        print("Invalid input. Please enter a number.")
+                        self.player_move()
+                    self.player_turn = not self.player_turn
+                    self.play_game()
 
-            def Pareto(mode,a,shape):
-                return (np.random.pareto(a,size=shape)+1)*mode
-            
-            def roulett(table):
-                total = np.sum(table)
-                rand = np.random.uniform(0.0,total)
-                sum = 0
-                for i in range(len(table)):
-                    sum += table[i]
-                    if(sum > rand):
-                        return i
-            
-            def filtIndivisual(vector):
-                for i in range(8*8):
-                    vector[i] = max(-30,min(30,vector[i]))
-            
-            def InitIndivisual():
-                return np.random.uniform(-30,30,(8*8))
-            
-            def EvalIndivisual(vector1,vector2):
-                return Evaluate(vector1.reshape((8,8)),vector2.reshape((8,8)))
-                    
-            class PSO:
-                n_iter = None
-                n_swarm = None
-                w = None
-                c1 = None
-                c2 = None
-                vectors = None
-                scores = None
-                g_best_score = None
-                g_best_vector = None
-                p_best_scores = None
-                p_best_vectors = None
+                def ai_move(self, ai):
+                    print("AI's move:")
+                    move = ai.get_best_move(self.board, False)
+                    self.make_move(move[0], move[1], False)
 
-                def __init__(self,n_iter,n_swarm,w,c1,c2):
-                    self.n_iter = n_iter
-                    self.n_swarm = n_swarm
-                    self.w = w
-                    self.c1 = c1
-                    self.c2 = c2
-                    self.InitSwarms()
-                    self.CalcScores()
-            
-                def InitSwarms(self):
-                    self.vectors = np.array([InitIndivisual() for _ in range(self.n_swarm)])
-                    self.speeds = np.zeros_like(self.vectors)
-                    self.p_best_scores = np.zeros(self.n_swarm)
-                    self.p_best_vectors = np.zeros_like(self.vectors)
-                    self.g_best_score = 0
-                    self.g_best_vector= np.zeros_like(self.vectors[0])
-                    self.scores = np.zeros(self.n_swarm)
-                
-                def CalcScores(self):
-                    enemy = np.random.randint(0,self.n_swarm,1)
-                    for i in range(self.n_swarm):
-                        new_score = EvalIndivisual(self.vectors[i],self.vectors[enemy])
-                        if new_score > self.p_best_scores[i]:
-                            self.p_best_scores[i] = new_score
-                            self.p_best_vectors[i] = np.copy(self.vectors[i])
-                        if new_score > self.g_best_score:
-                            self.g_best_score = new_score
-                            self.g_best_vector = np.copy(self.vectors[i])
-                        self.scores[i] = new_score
-            
-                def UpdateVectors(self):
-                    for i in range(self.n_swarm):
-                        r1 = np.random.uniform(0,1,self.vectors[0].shape)
-                        r2 = np.random.uniform(0,1,self.vectors[0].shape)
-                        self.speeds[i] = self.w*self.speeds[i]+r1*(self.p_best_vectors[i]-self.vectors[i])+r2*(self.g_best_vector-self.vectors[i])
-                        self.vectors[i] = self.vectors[i] + self.speeds[i]
-            
-                def Run(self):
-                    for i in range(self.n_iter):
-                        self.CalcScores()
-                        self.UpdateVectors()
-                    return self.g_best_score,self.g_best_vector
+                def is_valid_move(self, row, col, player):
+                    if self.board[row][col] != ' ':
+                        return False
 
-            class InstaGramFlies:
-                n_iters = None
-                n_clusters = None
-                n_flies = None
-                
-                centers = None
-                # best fly in in each cluster
-                best_fly_indices = None
-                cluster_like_average = None
-                center_dist_average = None
-                center_speeds = None
-            
-                likes = None
-                labels = None
-                # np.array([[pioneer rate, faddist rate, master rate],[...],...])
-                strategies = None
-                vectors = None  # np.array([x1,x2,x3,...]) x1: np.array
-            
-                def __init__(self, n_iters, n_clusters, n_flies):
-                    self.n_iters = n_iters
-                    self.n_clusters = n_clusters
-                    self.n_flies = n_flies
-                    self.InitFlies()
-                    self.EvaluateLikes()
-            
-                def InitFlies(self):
-                    self.vectors = np.array([InitIndivisual() for _ in range(self.n_flies)])
-                    self.strategies = np.zeros([self.n_flies, 3])
-                    for i in range(self.n_flies):
-                        randoms = np.random.uniform(1, 100, 3)
-                        for j in range(3):
-                            self.strategies[i][j] = randoms[j]/sum(randoms)
-                    self.likes = np.zeros(self.n_flies)
-                    self.best_fly_indices = np.zeros(self.n_clusters)
-            
-                def Run(self):
-                    fig = plt.figure()
-                    imgs = []
-                    for i in range(self.n_iters):
-                        self.EvaluateLikes()
-                        """
-                        scatter_center = plt.scatter(self.centers.T[0], self.centers.T[1], marker="*",c="red")
-                        scatter_vector = plt.scatter(self.vectors.T[0], self.vectors.T[1], marker=".",c="blue")
-                        imgs.append([scatter_center,scatter_vector])
-                        """
-                        self.Clustering()
-                        self.UpdateFlieVector()
-                    """
-                    plt.xlim(0,100)
-                    plt.ylim(0,100)
-                    plt.grid(True)
-                    ani = anime.ArtistAnimation(fig, imgs,interval=500)
-                    ani.save("sample.gif",writer="imagemagick")
-                    plt.show()
-                    """
-                    self.EvaluateLikes()
-                    best_arg = np.argmax(self.likes)
-                    return self.likes[best_arg],self.vectors[best_arg]
-            
-                def EvaluateLikes(self):
-                    enemy = np.random.randint(0,self.n_flies,1)
-                    for i in range(self.n_flies):
-                        self.likes[i] = EvalIndivisual(self.vectors[i],self.vectors[enemy])
-            
-                def Clustering(self):
-                    if self.centers is None:
-                        model = KMeans(n_clusters=self.n_clusters)
-                        result = model.fit(self.vectors)
-                        self.centers = result.cluster_centers_
-                    else:
-                        model = KMeans(n_init=1,n_clusters=self.n_clusters,init=self.centers)
-                        result = model.fit(self.vectors)
-                    self.labels = result.labels_
-                    self.center_speeds = result.cluster_centers_ - self.centers
-                    self.centers = result.cluster_centers_
-            
-                    # best flies in each cluster
-                    best = np.zeros(self.n_clusters)
-                    self.cluster_like_average = np.zeros(self.n_clusters)
-                    for i in range(self.n_flies):
-                        label = self.labels[i]
-                        if (self.likes[i] > best[label]):
-                            best[label] = self.likes[i]
-                            self.best_fly_indices[label] = i
-            
-                    # like average in each cluster
-                    for i in range(self.n_clusters):
-                        self.cluster_like_average[i] = np.mean(
-                                [self.likes[j] for j in range(self.n_flies) if self.labels[j] == i])
-            
-                    # average dist between each cluster
-                    self.center_dist_average = np.zeros_like(self.vectors[0])
-                    for i in range(self.n_clusters):
-                        for j in range(i+1,self.n_clusters):
-                            self.center_dist_average += (self.centers[i]-self.centers[j])
-                    self.center_dist_average /= sum(range(1,self.n_clusters))
-            
-                def UpdateFlieVector(self):
-                    for i in range(self.n_flies):
-                        action = roulett(self.strategies[i])
-                        # pioneer
-                        if action == 0:
-                            self.vectors[i] = self.UpdatePioneer(self.vectors[i])
-                        # faddist
-                        if action == 1:
-                            self.vectors[i] = self.UpdateFaddist(self.vectors[i])
-                        # master
-                        if action == 2:
-                            self.vectors[i] = self.UpdateMaster(self.vectors[i], self.labels[i])
-                        filtIndivisual(self.vectors[i])
-            
-                def UpdatePioneer(self, vector):
-                    length = Pareto(1,6,self.center_dist_average.shape)
-                    rand01 = np.random.choice([-1,1],length.shape)
-                    return vector + self.center_dist_average*length*rand01
-            
-                def UpdateFaddist(self, vector):
-                    cluster = roulett(self.cluster_like_average)
-                    return self.UpdateMaster(vector,cluster)
-            
-                def UpdateMaster(self, vector, label):
-                    index_table = [i for i in range(self.n_flies) if(self.labels[i]==label)]
-                    table = [self.likes[i] for i in index_table]
-                    target_fly_index = index_table[roulett(table)]
-                    center = self.centers[label]
-                    center_vector = (center - vector)*np.random.uniform(0,1)
-                    target_vector = (self.vectors[target_fly_index] - vector)*np.random.uniform(0,1)
-                    center_speed_vector = self.center_speeds[label]*np.random.uniform(0,1)
-                    return vector+center_vector+target_vector+center_speed_vector
+                    opponent_piece = 'O' if player else 'X'
+                    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
+
+                    for dr, dc in directions:
+                        r, c = row + dr, col + dc
+                        if self.is_inside_board(r, c) and self.board[r][c] == opponent_piece:
+                            while self.is_inside_board(r, c) and self.board[r][c] == opponent_piece:
+                                r += dr
+                                c += dc
+                            if self.is_inside_board(r, c) and self.board[r][c] == ('X' if player else 'O'):
+                                return True
+
+                    return False
+
+                def is_game_over(self):
+                    return not any(' ' in row for row in self.board) or (not self.get_legal_moves(True) and not self.get_legal_moves(False))
+
+                def get_legal_moves(self, player):
+                    legal_moves = []
+                    for i in range(8):
+                        for j in range(8):
+                            if self.is_valid_move(i, j, player):
+                                legal_moves.append((i, j))
+                    return legal_moves
+
+                def is_inside_board(self, row, col):
+                    return 0 <= row < 8 and 0 <= col < 8
+
+                def make_move(self, row, col, player):
+                    player_piece = 'X' if player else 'O'
+                    opponent_piece = 'O' if player else 'X'
+
+                    if self.board[row][col] != ' ':
+                        raise ValueError("Invalid move. The cell is not empty.")
+
+                    self.board[row][col] = player_piece
+
+                    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
+
+                    for dr, dc in directions:
+                        r, c = row + dr, col + dc
+                        flipped = False
+                        while self.is_inside_board(r, c) and self.board[r][c] == opponent_piece:
+                            flipped = True
+                            r += dr
+                            c += dc
+
+                        if self.is_inside_board(r, c) and self.board[r][c] == player_piece and flipped:
+                            r, c = row + dr, col + dc
+                            while self.board[r][c] == opponent_piece:
+                                self.board[r][c] = player_piece
+                                r += dr
+                                c += dc
+
+            game = OthelloGame()
 
             def on_click(e):
                 x, y = [int(i) for i in e.target.id.split('_')]
                 print("[ "+str(x)+" , "+str(y)+" ]")
-                o.playosero(x,y,stonemapAI)
+                game.player_move(x,y)
 
             board = js.document.getElementById('board')
             for i in range(8):
@@ -498,39 +342,16 @@
                     td.appendChild(img)
                     tr.appendChild(td)
                 board.appendChild(tr)
-        
-            n_indivisuals = 150
-            n_iters = 15
-            n_clusters = 10
-            c1 = 0.7
-            c2 = 0.7
-            w = 0.9
-            pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
-            _,pso_res = pso.Run()
-            stonemapAI = pso_res.reshape((8,8))
-            print(stonemapAI)
-            o = Osero() 
-            print("●の番です")
-            o.Disp()
 
             def Reset():
-                o.ResetField()
+                game.board = game.initialize_board()
                 print("●の番です")
-                o.Disp()     
 
             def InstaReset():
                 n_iters = 30
-                instaFlies = InstaGramFlies(n_iters, n_clusters, n_indivisuals)
-                _, if_res = instaFlies.Run()
-                stonemapAI = if_res.reshape((8,8))
-                print(stonemapAI)
 
             def PSOReset():
                 n_iters = 30
-                pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
-                _,pso_res = pso.Run()
-                stonemapAI = pso_res.reshape((8,8))
-                print(stonemapAI)
         </py-script>
             <!-- pso = PSO(n_iters,n_indivisuals,w,c1,c2)          
             _,pso_res = pso.Run()
