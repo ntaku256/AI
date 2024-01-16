@@ -221,7 +221,8 @@
                     print(" +-+-+-+-+-+-+-+-")
                     for i in range(8):
                         for j in range(8):
-                            do_flip(i,j,self.board[i][j])
+                            if self.board[i][j] != None
+                                do_flip(i,j,self.board[i][j])
 
                 def play_game(self):
                     ai = OthelloAI(depth=5)
