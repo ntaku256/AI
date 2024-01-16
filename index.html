@@ -317,13 +317,6 @@
                                 r += dr
                                 c += dc
 
-            game = OthelloGame()
-
-            def on_click(e):
-                x, y = [int(i) for i in e.target.id.split('_')]
-                print("[ "+str(x)+" , "+str(y)+" ]")
-                game.player_move(x,y)
-
             board = js.document.getElementById('board')
             for i in range(8):
                 tr = js.document.createElement('tr')
@@ -342,6 +335,13 @@
                     td.appendChild(img)
                     tr.appendChild(td)
                 board.appendChild(tr)
+
+            game = OthelloGame()
+
+            def on_click(e):
+                x, y = [int(i) for i in e.target.id.split('_')]
+                print("[ "+str(x)+" , "+str(y)+" ]")
+                game.player_move(x,y)
 
             def Reset():
                 game.player_turn = True
