@@ -197,10 +197,10 @@
 
             class OthelloGame:
                 player_turn = True
-                board = None
+                boaard = None
 
                 def __init__(self):
-                    self.board = self.initialize_board()
+                    self.initialize_board()
 
                 def initialize_board(self):
                     self.board = [[' ' for _ in range(8)] for _ in range(8)]
@@ -208,14 +208,13 @@
                     self.board[3][4] = 'X'
                     self.board[4][3] = 'X'
                     self.board[4][4] = 'O'
-                    return board
 
                 def display_board(self):
                     print("  0 1 2 3 4 5 6 7")
                     print(" +-+-+-+-+-+-+-+-")
                     for i, row in enumerate(self.board):
                         print(f"{i}|", end=" ")
-                        for j,cell in row:
+                        for cell in row:
                             print(cell, end=" ")
                         print("|")
                     print(" +-+-+-+-+-+-+-+-")
@@ -224,7 +223,8 @@
                             do_flip(i,j,self.board[i][j])
 
                 def play_game(self):
-                    ai = OthelloAI(depth=5)
+                    ai = OthelloAI(depth=3)
+                    self.player_turn = True
 
                     while not self.is_game_over():
                         self.display_board()
@@ -344,8 +344,7 @@
                 board.appendChild(tr)
 
             def Reset():
-                game.player_turn = True
-                game.initialize_board()
+                game.board = game.initialize_board()
                 print("●の番です")
 
             def InstaReset():
