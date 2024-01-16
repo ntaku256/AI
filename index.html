@@ -51,13 +51,13 @@
             def do_flip(x, y, color):
                             js.document.getElementById('%d_%d' % (x, y)).color = color
                             img = js.document.getElementById('img%d_%d' % (x, y))
-                            if color == 'white':
+                            if color == 'O':
                                 img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/white.png'
                                 img.style.visibility = 'visible'
-                            if color == 'black':
+                            if color == 'X':
                                 img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/black.png'
                                 img.style.visibility = 'visible'
-                            if color == 'empty':
+                            if color == ' ':
                                 img.style.visibility = 'hidden'
 
             class OthelloAI:
