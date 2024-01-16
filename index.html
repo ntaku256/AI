@@ -319,6 +319,7 @@
                                 c += dc
 
             game = OthelloGame()
+            game.display_board()
 
             def on_click(e):
                 x, y = [int(i) for i in e.target.id.split('_')]
