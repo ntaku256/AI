@@ -133,7 +133,8 @@
                             best_moves = [move]
                         elif eval == max_eval:
                             best_moves.append(move)
-            
+                                
+                    print(max_eval)
                     return random.choice(best_moves)
 
                 def is_game_over(self, board):
