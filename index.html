@@ -121,17 +121,20 @@
 
                 def get_best_move(self, board, player):
                     legal_moves = self.get_legal_moves(board, player)
-                    best_move = legal_moves[0]
+                    best_move = [legal_moves[0]]
                     max_eval = float('-inf')
 
                     for move in legal_moves:
                         new_board = self.make_move(copy.deepcopy(board), move, player)
                         eval = self.nega_alpha(new_board, self.depth - 1, float('-inf'), float('inf'), False)
+                                
                         if eval > max_eval:
                             max_eval = eval
-                            best_move = move
-
-                    return best_move
+                            best_moves = [move]
+                        elif eval == max_eval:
+                            best_moves.append(move)
+            
+                    return random.choice(best_moves)
 
                 def is_game_over(self, board):
                     return not any(' ' in row for row in board) or (not self.get_legal_moves(board, True) and not self.get_legal_moves(board, False))
@@ -221,6 +224,11 @@
                     for i in range(8):
                         for j in range(8):
                             do_flip(i,j,self.board[i][j])
+                        
+                def get_scores(self):
+                    player_score = sum(row.count('X') for row in self.board)
+                    opponent_score = sum(row.count('O') for row in self.board)
+                    return player_score, opponent_score
 
                 def play_game(self):
                     ai = OthelloAI(depth=5)
@@ -236,6 +244,15 @@
                         self.player_turn = not self.player_turn
 
                     self.display_board()
+                    player_score, opponent_score = self.get_scores()
+                    print(f"Player Score: {player_score}")
+                    print(f"AI Score: {opponent_score}")
+                    if player_score > opponent_score:
+                        print("Player wins!")
+                    elif player_score < opponent_score:
+                        print("AI wins!")
+                    else:
+                        print("It's a draw!")
                     print("Game Over")
 
                 def player_move(self,row,col):
