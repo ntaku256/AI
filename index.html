@@ -317,7 +317,6 @@
                                 c += dc
 
             game = OthelloGame()
-            #game.display_board()
 
             def on_click(e):
                 x, y = [int(i) for i in e.target.id.split('_')]
@@ -343,6 +342,8 @@
                     tr.appendChild(td)
                 board.appendChild(tr)
 
+            game.display_board()
+            
             def Reset():    
                 game.player_turn = True
                 game.board = game.initialize_board()
