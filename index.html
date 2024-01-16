@@ -215,13 +215,13 @@
                     print(" +-+-+-+-+-+-+-+-")
                     for i, row in enumerate(self.board):
                         print(f"{i}|", end=" ")
-                        for j,cell in row:
+                        for cell in row:
                             print(cell, end=" ")
                         print("|")
                     print(" +-+-+-+-+-+-+-+-")
-                    #for i in range(8):
-                    #    for j in range(8):
-                    #        do_flip(i,j,self.board[i][j])
+                    for i in range(8):
+                        for j in range(8):
+                            do_flip(i,j,self.board[i][j])
 
                 def play_game(self):
                     ai = OthelloAI(depth=3)
