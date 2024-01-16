@@ -197,7 +197,7 @@
 
             class OthelloGame:
                 player_turn = True
-                boaard = None
+                board = None
 
                 def __init__(self):
                     self.board = self.initialize_board()
@@ -208,21 +208,20 @@
                     self.board[3][4] = 'X'
                     self.board[4][3] = 'X'
                     self.board[4][4] = 'O'
-                    return self.board
+                    return board
 
                 def display_board(self):
                     print("  0 1 2 3 4 5 6 7")
                     print(" +-+-+-+-+-+-+-+-")
                     for i, row in enumerate(self.board):
                         print(f"{i}|", end=" ")
-                        for cell in row:
+                        for j,cell in row:
                             print(cell, end=" ")
                         print("|")
                     print(" +-+-+-+-+-+-+-+-")
                     for i in range(8):
                         for j in range(8):
-                            #if self.board[i][j] != None
-                            do_flip(i,j,color = ' ')      
+                            do_flip(i,j,self.board[i][j])
 
                 def play_game(self):
                     ai = OthelloAI(depth=5)
@@ -318,6 +317,13 @@
                                 r += dr
                                 c += dc
 
+            game = OthelloGame()
+
+            def on_click(e):
+                x, y = [int(i) for i in e.target.id.split('_')]
+                print("[ "+str(x)+" , "+str(y)+" ]")
+                game.player_move(x,y)
+
             board = js.document.getElementById('board')
             for i in range(8):
                 tr = js.document.createElement('tr')
@@ -328,7 +334,7 @@
                     td.width = td.height = 75
                     td.align = 'center'
                     td.id = '%d_%d' % (i, j)
-                    td.color = ' '
+                    td.color = 'empty'
                     
                     add_event_listener(td, "click", on_click)
                     img = js.document.createElement('img')
@@ -337,13 +343,6 @@
                     tr.appendChild(td)
                 board.appendChild(tr)
 
-            game = OthelloGame()
-
-            def on_click(e):
-                x, y = [int(i) for i in e.target.id.split('_')]
-                print("[ "+str(x)+" , "+str(y)+" ]")
-                game.player_move(x,y)
-                        
             def Reset():
                 game.player_turn = True
                 game.board = game.initialize_board()
