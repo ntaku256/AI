@@ -224,8 +224,7 @@
                             do_flip(i,j,self.board[i][j])
 
                 def play_game(self):
-                    ai = OthelloAI(depth=3)
-                    self.player_turn = True
+                    ai = OthelloAI(depth=5)
 
                     while not self.is_game_over():
                         self.display_board()
@@ -319,6 +318,9 @@
                                 c += dc
 
             game = OthelloGame()
+            game.initialize_board()
+            game.display_board()
+            game.player_turn = True
 
             def on_click(e):
                 x, y = [int(i) for i in e.target.id.split('_')]
@@ -345,6 +347,7 @@
                 board.appendChild(tr)
 
             def Reset():
+                game.player_turn = True
                 game.board = game.initialize_board()
                 print("●の番です")
 
