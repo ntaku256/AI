@@ -208,6 +208,8 @@
                     self.board[3][4] = 'X'
                     self.board[4][3] = 'X'
                     self.board[4][4] = 'O'
+                    self.display_board()
+                    self.player_turn = True
                     return self.board
 
                 def display_board(self):
@@ -318,9 +320,6 @@
                                 c += dc
 
             game = OthelloGame()
-            game.initialize_board()
-            game.display_board()
-            game.player_turn = True
 
             def on_click(e):
                 x, y = [int(i) for i in e.target.id.split('_')]
