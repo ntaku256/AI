@@ -219,8 +219,10 @@
                             print(cell, end=" ")
                         print("|")
                     print(" +-+-+-+-+-+-+-+-")
-                    
-                        
+                    for i in range(8):
+                        for j in range(8):
+                            #if self.board[i][j] != None
+                            do_flip(i,j,color = ' ')      
 
                 def play_game(self):
                     ai = OthelloAI(depth=5)
