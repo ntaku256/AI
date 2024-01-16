@@ -197,17 +197,18 @@
 
             class OthelloGame:
                 player_turn = True
+                boaard = None
 
                 def __init__(self):
                     self.board = self.initialize_board()
 
                 def initialize_board(self):
-                    board = [[' ' for _ in range(8)] for _ in range(8)]
-                    board[3][3] = 'O'
-                    board[3][4] = 'X'
-                    board[4][3] = 'X'
-                    board[4][4] = 'O'
-                    return board
+                    self.board = [[' ' for _ in range(8)] for _ in range(8)]
+                    self.board[3][3] = 'O'
+                    self.board[3][4] = 'X'
+                    self.board[4][3] = 'X'
+                    self.board[4][4] = 'O'
+                    return self.board
 
                 def display_board(self):
                     print("  0 1 2 3 4 5 6 7")
