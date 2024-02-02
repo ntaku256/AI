@@ -90,7 +90,7 @@
                             elif board[i][j] == opponent_piece:
                                 opponent_score += position_values[i][j]
 
-                    return player_score - opponent_score
+                    return - player_score + opponent_score
 
                 def nega_alpha(self, board, depth, alpha, beta, maximizing_player):
                     if depth == 0 or self.is_game_over(board):
