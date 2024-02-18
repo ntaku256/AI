@@ -105,7 +105,7 @@
                             if field[i][j] == 1:
                                 s += "|○ "
                             if field[i][j] == -1:
-                                s += "|   "
+                                s += "|_ "
                         s += "|\n"
                     s+= "  "
                     for i in range(self.Width):
@@ -235,12 +235,11 @@
                     print("おける場所")
                     for (yy,xx) in positions:
                         print("yy:",yy,"xx:",xx)
-                    while True:
-                        if not self.CanPUt(y, x, self.Color,self.Field):
-                            print("置やんぞ!!")
-                        else:
-                            self.Put(y,x,self.Color,self.Field)
-                            break
+                    if not self.CanPUt(y, x, self.Color,self.Field):
+                        print("置やんぞ!!")
+                    else:
+                        self.Put(y,x,self.Color,self.Field)
+                        break
                     self.Disp(self.Field)
                     self.Color = (self.Color + 1)%2
                     self.PlayOsero()
