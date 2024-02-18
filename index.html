@@ -229,7 +229,7 @@
                     position = random.choice(best_hand)
                     self.Put(position[0],position[1],self.Color,self.Field)
 
-                def Player_move(self,x,y):
+                def Player_move(self,y,x):
                     positions = self.GetPossiblePutPosition(self.Color,self.Field)
                     print("おける場所")
                     for (yy,xx) in positions:
@@ -241,7 +241,7 @@
                             self.Put(y,x,self.Color,self.Field)
                             break
                     self.Disp(self.Field)
-                    # self.PlayOsero()
+                    self.PlayOsero()
 
                 def PlayOsero(self):
                     while not self.IsGameOver(np.copy(self.Color),self.Field):
@@ -252,7 +252,7 @@
                             continue
                         if self.Color == 0:
                             print("●の番です")
-                            # self.Player_move(self.Color)
+                            # self.Player_move()
                             break
                         else:
                             print("○の番です")
