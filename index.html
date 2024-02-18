@@ -228,6 +228,7 @@
                             best_hand.append(arr)
                     position = random.choice(best_hand)
                     self.Put(position[0],position[1],self.Color,self.Field)
+                    self.Color = (self.Color + 1)%2
 
                 def Player_move(self,y,x):
                     positions = self.GetPossiblePutPosition(self.Color,self.Field)
@@ -241,6 +242,7 @@
                             self.Put(y,x,self.Color,self.Field)
                             break
                     self.Disp(self.Field)
+                    self.Color = (self.Color + 1)%2
                     self.PlayOsero()
 
                 def PlayOsero(self):
@@ -257,7 +259,6 @@
                         else:
                             print("○の番です")
                             self.AI_move()
-                        self.Color = (self.Color + 1)%2
                     self.Disp(self.Field)
                     if self.IsGameOver(np.copy(self.Color),self.Field):
                         n_white,n_black,n_sum = self.Result()
