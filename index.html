@@ -239,9 +239,9 @@
                         print("置やんぞ!!")
                     else:
                         self.Put(y,x,self.Color,self.Field)
-                    self.Disp(self.Field)
-                    self.Color = (self.Color + 1)%2
-                    self.PlayOsero()
+                        self.Disp(self.Field)
+                        self.Color = (self.Color + 1)%2
+                        self.PlayOsero()
 
                 def PlayOsero(self):
                     while not self.IsGameOver(np.copy(self.Color),self.Field):
@@ -289,6 +289,7 @@
                 board.appendChild(tr)
 
             game.Disp(game.Field)
+            print("●の番です")
             
             def Reset():    
                 game.Color = 0
