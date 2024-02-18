@@ -240,7 +240,8 @@
                         else:
                             self.Put(y,x,self.Color,self.Field)
                             break
-                    self.PlayOsero()
+                    self.Disp(self.Field)
+                    # self.PlayOsero()
 
                 def PlayOsero(self):
                     while not self.IsGameOver(np.copy(self.Color),self.Field):
