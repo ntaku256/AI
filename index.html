@@ -43,303 +43,231 @@
         <py-script>
         </py-script>
         <py-script>
-            import copy
+            import numpy as np
             import random
             import pyodide
             from js import console, document
             from pyodide.ffi.wrappers import add_event_listener
+
             def do_flip(x, y, color):
                             js.document.getElementById('%d_%d' % (x, y)).color = color
                             img = js.document.getElementById('img%d_%d' % (x, y))
-                            if color == 'O':
+                            if color == 0:
                                 img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/white.png'
                                 img.style.visibility = 'visible'
-                            if color == 'X':
+                            if color == 1:
                                 img.src = 'https://raw.githubusercontent.com/pukie/othello-game/master/images/black.png'
                                 img.style.visibility = 'visible'
-                            if color == ' ':
+                            if color == -1:
                                 img.style.visibility = 'hidden'
 
-            class OthelloAI:
-                def __init__(self, depth):
-                    self.depth = depth
-
-                def evaluate_board(self, board, maximizing_player):
-                    player_piece = 'X' if maximizing_player else 'O'
-                    opponent_piece = 'O' if maximizing_player else 'X'
-            
-                    player_score = 0
-                    opponent_score = 0
-
-                    # マスの評価値
-                    position_values = [
-                        [60, -12, 0, -1, -1, 0, -12, 60],
-                        [-12, -15, -3, -3, -3, -3, -15, -12],
-                        [0, -3, 0, -1, -1, 0, -3, 0],
-                        [-1, -3, -1, -1, -1, -1, -3, -1],
-                        [-1, -3, -1, -1, -1, -1, -3, -1],
-                        [0, -3, 0, -1, -1, 0, -3, 0],
-                        [-12, -15, -3, -3, -3, -3, -15, -12],
-                        [60, -12, 0, -1, -1, 0, -12, 60]
-                    ]
-
-                    for i in range(8):
-                        for j in range(8):
-                            if board[i][j] == player_piece:
-                                player_score += position_values[i][j]
-                            elif board[i][j] == opponent_piece:
-                                opponent_score += position_values[i][j]
-
-                    return - player_score + opponent_score
-
-                def nega_alpha(self, board, depth, alpha, beta, maximizing_player):
-                    if depth == 0 or self.is_game_over(board):
-                        return self.evaluate_board(board, maximizing_player)
-
-                    legal_moves = self.get_legal_moves(board, maximizing_player)
-
-                    if maximizing_player:
-                        max_eval = float('-inf')
-                        for move in legal_moves:
-                            new_board = self.make_move(copy.deepcopy(board), move, maximizing_player)
-                            eval = self.nega_alpha(new_board, depth - 1, alpha, beta, False)
-                            max_eval = max(max_eval, eval)
-                            alpha = max(alpha, eval)
-                            if beta <= alpha:
-                                break
-                        return max_eval
-                    else:
-                        min_eval = float('inf')
-                        for move in legal_moves:
-                            new_board = self.make_move(copy.deepcopy(board), move, maximizing_player)
-                            eval = self.nega_alpha(new_board, depth - 1, alpha, beta, True)
-                            min_eval = min(min_eval, eval)
-                            beta = min(beta, eval)
-                            if beta <= alpha:
-                                break
-                        return min_eval
-
-                def get_best_move(self, board, player):
-                    legal_moves = self.get_legal_moves(board, player)
-                    best_move = [legal_moves[0]]
-                    max_eval = float('-inf')
-
-                    for move in legal_moves:
-                        new_board = self.make_move(copy.deepcopy(board), move, player)
-                        eval = self.nega_alpha(new_board, self.depth - 1, float('-inf'), float('inf'), False)
-                                
-                        if eval > max_eval:
-                            max_eval = eval
-                            best_moves = [move]
-                        elif eval == max_eval:
-                            best_moves.append(move)
-                                
-                    print(max_eval)
-                    return random.choice(best_moves)
-
-                def is_game_over(self, board):
-                    return not any(' ' in row for row in board) or (not self.get_legal_moves(board, True) and not self.get_legal_moves(board, False))
-
-                def get_legal_moves(self, board, player):
-                    legal_moves = []
-                    for i in range(8):
-                        for j in range(8):
-                            if self.is_valid_move(board, i, j, player):
-                                legal_moves.append((i, j))
-                    return legal_moves
-
-                def is_valid_move(self, board, row, col, player):
-                    if board[row][col] != ' ':
-                        return False
-
-                    opponent_piece = 'O' if player else 'X'
-                    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
-
-                    for dr, dc in directions:
-                        r, c = row + dr, col + dc
-                        if self.is_inside_board(r, c) and board[r][c] == opponent_piece:
-                            while self.is_inside_board(r, c) and board[r][c] == opponent_piece:
-                                r += dr
-                                c += dc
-                            if self.is_inside_board(r, c) and board[r][c] == ('X' if player else 'O'):
-                                return True
-
-                    return False
-
-                def is_inside_board(self, row, col):
-                    return 0 <= row < 8 and 0 <= col < 8
-
-                def make_move(self, board, move, player):
-                    row, col = move
-                    player_piece = 'X' if player else 'O'
-                    opponent_piece = 'O' if player else 'X'
-
-                    if board[row][col] != ' ':
-                        raise ValueError("Invalid move. The cell is not empty.")
-
-                    board[row][col] = player_piece
-
-                    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
-
-                    for dr, dc in directions:
-                        r, c = row + dr, col + dc
-                        flipped = False
-                        while self.is_inside_board(r, c) and board[r][c] == opponent_piece:
-                            flipped = True
-                            r += dr
-                            c += dc
-
-                        if self.is_inside_board(r, c) and board[r][c] == player_piece and flipped:
-                            r, c = row + dr, col + dc
-                            while board[r][c] == opponent_piece:
-                                board[r][c] = player_piece
-                                r += dr
-                                c += dc
-
-                    return board
-
-
-            class OthelloGame:
-                player_turn = True
-                boaard = None
+            class Osero:
+                Width = 8
+                Height = 8
+                
+                #white:-1, black:1, empty:0
+                Field = None
+                Color = 0
+                Depth = 4
+                SelfColor = None
+                StoneMap = [
+                    [30, -12, 0, -1, -1, 0, -12, 30],
+                    [-12, -15, -3, -3, -3, -3, -15, -12],
+                    [0, -3, 0, -1, -1, 0, -3, 0],
+                    [-1, -3, -1, -1, -1, -1, -3, -1],
+                    [-1, -3, -1, -1, -1, -1, -3, -1],
+                    [0, -3, 0, -1, -1, 0, -3, 0],
+                    [-12, -15, -3, -3, -3, -3, -15, -12],
+                    [30, -12, 0, -1, -1, 0, -12, 30]
+                ]
 
                 def __init__(self):
-                    self.initialize_board()
+                    self.Field = [[-1 for _ in range(self.Width)] for _ in range(self.Height)]
+                    self.Field[3][3] = 0
+                    self.Field[3][4] = 1
+                    self.Field[4][3] = 1
+                    self.Field[4][4] = 0
 
-                def initialize_board(self):
-                    self.board = [[' ' for _ in range(8)] for _ in range(8)]
-                    self.board[3][3] = 'O'
-                    self.board[3][4] = 'X'
-                    self.board[4][3] = 'X'
-                    self.board[4][4] = 'O'
+                def Disp(self,field):
+                    s = "  "
+                    for i in range(self.Width):
+                        s += "|"+str(i)+" "
+                    s += "\n  "
+                    for i in range(self.Width):
+                        s += "|--"
+                    s += "\n"
+                    for i in range(self.Height):
+                        s += str(i) + " "
+                        for j in range(self.Width):
+                            do_flip(i,j,field[i][j])
+                            if field[i][j] == 0:
+                                s += "|● "
+                            if field[i][j] == 1:
+                                s += "|○ "
+                            if field[i][j] == -1:
+                                s += "|  "
+                        s += "|\n"
+                    s+= "  "
+                    for i in range(self.Width):
+                        s += "|--"
+                    s += "\n"
+                    print(s)
 
-                def display_board(self):
-                    print("  0 1 2 3 4 5 6 7")
-                    print(" +-+-+-+-+-+-+-+-")
-                    for i, row in enumerate(self.board):
-                        print(f"{i}|", end=" ")
-                        for cell in row:
-                            print(cell, end=" ")
-                        print("|")
-                    print(" +-+-+-+-+-+-+-+-")
-                    for i in range(8):
-                        for j in range(8):
-                            do_flip(i,j,self.board[i][j])
-                        
-                def get_scores(self):
-                    player_score = sum(row.count('X') for row in self.board)
-                    opponent_score = sum(row.count('O') for row in self.board)
-                    return player_score, opponent_score
-
-                def play_game(self):
-                    ai = OthelloAI(depth=4)
-
-                    while not self.is_game_over():
-                        self.display_board()
-
-                        if self.player_turn:
-                            return
-                        else:
-                            self.ai_move(ai)
-
-                        self.player_turn = not self.player_turn
-
-                    self.display_board()
-                    player_score, opponent_score = self.get_scores()
-                    print(f"Player Score: {player_score}")
-                    print(f"AI Score: {opponent_score}")
-                    if player_score > opponent_score:
-                        print("Player wins!")
-                    elif player_score < opponent_score:
-                        print("AI wins!")
-                    else:
-                        print("It's a draw!")
-                    print("Game Over")
-
-                def player_move(self,row,col):
-                    try:
-                        # row = int(input("Enter the row (0-7): "))
-                        # col = int(input("Enter the column (0-7): "))
-                        if self.is_valid_move(row, col, True):
-                            self.make_move(row, col, True)
-                        else:
-                            print("Invalid move. Try again.")
-                            self.player_move()
-                    except ValueError:
-                        print("Invalid input. Please enter a number.")
-                        self.player_move()
-                    self.player_turn = not self.player_turn
-                    self.play_game()
-
-                def ai_move(self, ai):
-                    print("AI's move:")
-                    move = ai.get_best_move(self.board, False)
-                    self.make_move(move[0], move[1], False)
-
-                def is_valid_move(self, row, col, player):
-                    if self.board[row][col] != ' ':
+                def Put(self,y,x,color,field):
+                    dxArr = [0,1,1,1,0,-1,-1,-1]
+                    dyArr = [1,1,0,-1,-1,-1,0,1]
+                    for dx,dy in zip(dxArr,dyArr):
+                        if(l := self.CheckDepth(color,field,y,x,dy,dx),l!=-1):
+                            xx = x
+                            yy = y
+                            for i in range(l+1):
+                                field[yy][xx] = color
+                                xx += dx
+                                yy += dy
+                    return field
+                
+                def CanPUt(self,y,x,color,field):
+                    if not self.IsInside(y, x) or field[y][x] != -1:
                         return False
+                    dxArr = [0,1,1,1,0,-1,-1,-1]
+                    dyArr = [1,1,0,-1,-1,-1,0,1]
+                    for dx,dy in zip(dxArr,dyArr):
+                        if(self.CheckDepth(color,field,y,x,dy,dx) > 0):
+                            return True
+                
+                def CheckDepth(self,color,field,y,x,dy,dx):
+                    depth = 0
+                    while(True):
+                        y += dy
+                        x += dx
+                        if(self.IsInside(y,x)==False or field[y][x] == -1):
+                            return -1
+                        if(field[y][x] == color):
+                            return depth
+                        depth += 1
 
-                    opponent_piece = 'O' if player else 'X'
-                    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
+                def GetPossiblePutPosition(self,color,field):
+                    positions = []
+                    for y in range(self.Height):
+                        for x in range(self.Width):
+                            if self.CanPUt(y,x,color,field):
+                                positions.append([y,x])
+                    return positions
+                    
+                def IsInside(self,y,x):
+                    return x >= 0 and x < self.Width and y >= 0 and y < self.Height
 
-                    for dr, dc in directions:
-                        r, c = row + dr, col + dc
-                        if self.is_inside_board(r, c) and self.board[r][c] == opponent_piece:
-                            while self.is_inside_board(r, c) and self.board[r][c] == opponent_piece:
-                                r += dr
-                                c += dc
-                            if self.is_inside_board(r, c) and self.board[r][c] == ('X' if player else 'O'):
-                                return True
+                def IsGameOver(self,color,field):
+                    return  not any(-1 in _ for _ in field) or (not self.GetPossiblePutPosition(color,field) and not self.GetPossiblePutPosition((color + 1)%2,field))
+                
+                def Result(self):
+                    n_white = 0
+                    n_black = 0
+                    n_sum = 0
+                    for y in range(self.Height):
+                        for x in range(self.Width):
+                            if self.Field[y][x] == -1:
+                                continue
+                            n_sum += 1
+                            if self.Field[y][x] == 0:
+                                n_white += 1
+                            if self.Field[y][x] == 1:
+                                n_black += 1
+                    return n_white,n_black,n_sum
+                
+                def CalcStoneValue(self,color,field,stoneMap):
+                    value = 0
+                    for y in range(self.Height):
+                        for x in range(self.Width):
+                            if field[y][x] == color:
+                                value += stoneMap[y][x]
+                            if field[y][x] == (color + 1)%2:
+                                value -= stoneMap[y][x]
+                    return value
 
-                    return False
+                def Alphabeta(self,color,field,depth,alpha,beta):
+                    if depth == 0 or self.IsGameOver(color,field):
+                        return self.CalcStoneValue(self.SelfColor,field,self.StoneMap)   
+                    
+                    positions = self.GetPossiblePutPosition(color,field)
 
-                def is_game_over(self):
-                    return not any(' ' in row for row in self.board) or (not self.get_legal_moves(True) and not self.get_legal_moves(False))
+                    if color == self.SelfColor:
+                        maxValue = float('-inf')
+                        for arr in positions:
+                            newField = self.Put(arr[0],arr[1],color,np.copy(field))
+                            value = self.Alphabeta((color + 1)%2,newField,depth - 1,alpha,beta)
+                            maxValue = max(maxValue,value)
+                            alpha = max(alpha,value)
+                            if beta <= alpha:
+                                break
+                        return maxValue
+                    else:
+                        minValue = float('inf')
+                        for arr in positions:
+                            newField = self.Put(arr[0],arr[1],color,np.copy(field))
+                            value = self.Alphabeta((color + 1)%2,newField,depth - 1,alpha,beta)
+                            minValue = min(minValue,value)
+                            beta = min(beta,value)
+                            if beta <= alpha:
+                                break
+                        return minValue
 
-                def get_legal_moves(self, player):
-                    legal_moves = []
-                    for i in range(8):
-                        for j in range(8):
-                            if self.is_valid_move(i, j, player):
-                                legal_moves.append((i, j))
-                    return legal_moves
+                def AI_move(self):
+                    self.SelfColor = self.Color
+                    positions = self.GetPossiblePutPosition(self.Color,self.Field)
+                    best_hand = [positions[0]]
+                    maxValue = float('-inf')
 
-                def is_inside_board(self, row, col):
-                    return 0 <= row < 8 and 0 <= col < 8
+                    for arr in positions:
+                        newField = self.Put(arr[0],arr[1],self.Color,np.copy(self.Field))
+                        value = self.Alphabeta((self.Color + 1)%2,newField,self.Depth - 1,float('-inf'),float('inf'))
+                        if value > maxValue:
+                            maxValue = value
+                            best_hand = [arr]
+                        elif value == maxValue:
+                            best_hand.append(arr)
+                    position = random.choice(best_hand)
+                    self.Put(position[0],position[1],self.Color,self.Field)
 
-                def make_move(self, row, col, player):
-                    player_piece = 'X' if player else 'O'
-                    opponent_piece = 'O' if player else 'X'
+                def Player_move(self,x,y):
+                    positions = self.GetPossiblePutPosition(self.Color,self.Field)
+                    print("おける場所")
+                    for (yy,xx) in positions:
+                        print("yy:",yy,"xx:",xx)
+                    while True:
+                        if not self.CanPUt(y, x, self.Color,self.Field):
+                            print("置やんぞ!!")
+                        else:
+                            self.Put(y,x,self.Color,self.Field)
+                            break
+                    self.PlayOsero()
 
-                    if self.board[row][col] != ' ':
-                        raise ValueError("Invalid move. The cell is not empty.")
-
-                    self.board[row][col] = player_piece
-
-                    directions = [(0, 1), (1, 0), (0, -1), (-1, 0), (1, 1), (-1, -1), (-1, 1), (1, -1)]
-
-                    for dr, dc in directions:
-                        r, c = row + dr, col + dc
-                        flipped = False
-                        while self.is_inside_board(r, c) and self.board[r][c] == opponent_piece:
-                            flipped = True
-                            r += dr
-                            c += dc
-
-                        if self.is_inside_board(r, c) and self.board[r][c] == player_piece and flipped:
-                            r, c = row + dr, col + dc
-                            while self.board[r][c] == opponent_piece:
-                                self.board[r][c] = player_piece
-                                r += dr
-                                c += dc
-
-            game = OthelloGame()
+                def PlayOsero(self):
+                    while not self.IsGameOver(np.copy(self.Color),self.Field):
+                        self.Disp(self.Field)
+                        positions = self.GetPossiblePutPosition(self.Color,self.Field)
+                        if len(positions) == 0:
+                            self.Color = (self.Color + 1)%2
+                            continue
+                        if self.Color == 0:
+                            print("●の番です")
+                            # self.Player_move(self.Color)
+                            break
+                        else:
+                            print("○の番です")
+                            self.AI_move()
+                        self.Color = (self.Color + 1)%2
+                    self.Disp(self.Field)
+                    if self.IsGameOver(np.copy(self.Color),self.Field):
+                        n_white,n_black,n_sum = self.Result()
+                        print("white:",n_white,"black:",n_black,"total:",n_sum)
+                        
+            game = Osero()
 
             def on_click(e):
                 x, y = [int(i) for i in e.target.id.split('_')]
                 print("[ "+str(x)+" , "+str(y)+" ]")
-                game.player_move(x,y)
+                game.Player_move(x,y)
 
             board = js.document.getElementById('board')
             for i in range(8):
@@ -360,12 +288,16 @@
                     tr.appendChild(td)
                 board.appendChild(tr)
 
-            game.display_board()
+            game.Disp(game.Field)
             
             def Reset():    
-                game.player_turn = True
-                game.initialize_board()
-                game.display_board()
+                game.Color = 0
+                game.Field = [[-1 for _ in range(game.Width)] for _ in range(game.Height)]
+                game.Field[3][3] = 0
+                game.Field[3][4] = 1
+                game.Field[4][3] = 1
+                game.Field[4][4] = 0
+                game.Disp(game.Field)
                 print("●の番です")
 
             def InstaReset():
