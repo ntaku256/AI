@@ -226,6 +226,7 @@
                             best_hand = [arr]
                         elif value == maxValue:
                             best_hand.append(arr)
+                    print(maxValue)
                     position = random.choice(best_hand)
                     self.Put(position[0],position[1],self.Color,self.Field)
                     self.Color = (self.Color + 1)%2
