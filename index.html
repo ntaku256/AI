@@ -190,6 +190,8 @@
                         return self.CalcStoneValue(self.SelfColor,field,self.StoneMap)   
                     
                     positions = self.GetPossiblePutPosition(color,field)
+                    if len(positions) == 0:
+                        return self.Alphabeta((color + 1)%2,field,depth - 1,alpha,beta)
 
                     if color == self.SelfColor:
                         maxValue = float('-inf')
