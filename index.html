@@ -111,7 +111,7 @@
                     for i in range(self.Width):
                         s += "|--"
                     s += "\n"
-                    print(s)
+                    #print(s)
 
                 def Put(self,y,x,color,field):
                     dxArr = [0,1,1,1,0,-1,-1,-1]
@@ -258,9 +258,8 @@
                         else:
                             print("○の番です")
                             self.AI_move()
-                        self.Disp(self.Field)
+                    self.Disp(self.Field)
                     if self.IsGameOver(np.copy(self.Color),self.Field):
-                        self.Disp(self.Field)
                         n_white,n_black,n_sum = self.Result()
                         print("white:",n_white,"black:",n_black,"total:",n_sum)
                         
