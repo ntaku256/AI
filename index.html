@@ -243,7 +243,7 @@
                     else:
                         self.Put(y,x,self.Color,self.Field)
                         self.Color = (self.Color + 1)%2
-                        self.PlayOsero()
+                        #self.PlayOsero()
 
                 def PlayOsero(self):
                     while not self.IsGameOver(np.copy(self.Color),self.Field):
