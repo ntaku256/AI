@@ -111,7 +111,7 @@
                     for i in range(self.Width):
                         s += "|--"
                     s += "\n"
-                    print(s)
+                    #print(s)
 
                 def Put(self,y,x,color,field):
                     dxArr = [0,1,1,1,0,-1,-1,-1]
@@ -235,9 +235,9 @@
 
                 def Player_move(self,y,x):
                     positions = self.GetPossiblePutPosition(self.Color,self.Field)
-                    print("おける場所")
-                    for (yy,xx) in positions:
-                        print("yy:",yy,"xx:",xx)
+                    #print("おける場所")
+                    #for (yy,xx) in positions:
+                    #    print("yy:",yy,"xx:",xx)
                     if not self.CanPUt(y, x, self.Color,self.Field):
                         print("置やんぞ!!")
                     else:
